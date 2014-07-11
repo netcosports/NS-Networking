@@ -298,7 +298,7 @@ typedef enum
 
 +(id)getCacheValueForUrl:(NSString *)url andTTL:(NSInteger)ttlFile
 {
-    NSDictionary *cachedResponse = [NSDictionary getDataFromFileCache:[url md5] temps:ttlFile del:NO];
+    NSDictionary *cachedResponse = [NSDictionary getDataFromFileCache:[url md5] temps:(int)ttlFile del:NO];
     NSLog(@"[NCSRequester] Cache returned => %@", url);
     return cachedResponse;
 }
