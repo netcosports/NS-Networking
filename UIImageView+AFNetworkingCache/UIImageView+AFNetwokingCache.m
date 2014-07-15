@@ -13,20 +13,30 @@
 
 - (void)setImageWithURLString:(NSString *)urlString
               timeoutInterval:(NSTimeInterval)timeInterval
-             placeholderImage:(UIImage *)placeholderImage {
-    
-    NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:[NSURL URLWithString:[urlString stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding]]];
-    [request setTimeoutInterval:timeInterval];
-    [request addValue:@"image/*" forHTTPHeaderField:@"Accept"];
-    
-    [self setImageWithURLRequest:request placeholderImage:placeholderImage success:nil failure:nil];
+             placeholderImage:(UIImage *)placeholderImage
+{
+    [self setImageWithURLString:urlString timeoutInterval:timeInterval placeholderImage:placeholderImage success:nil failure:nil];
 }
 
 - (void)setImageWithURLString:(NSString *)urlString
               timeoutInterval:(NSTimeInterval)timeInterval
              placeholderImage:(UIImage *)placeholderImage
                       success:(void (^)(NSURLRequest *request, NSHTTPURLResponse *response, UIImage *image))success
-                      failure:(void (^)(NSURLRequest *request, NSHTTPURLResponse *response, NSError *error))failure {
+                      failure:(void (^)(NSURLRequest *request, NSHTTPURLResponse *response, NSError *error))failure
+{
+    
+    // In case there is the path of a local image in the URL String.
+    if (urlString && ([urlString rangeOfString:@"http"].location == NSNotFound || [urlString rangeOfString:@"/"].location == NSNotFound))
+    {
+        UIImage *localImage = [UIImage imageNamed:urlString];
+        if (localImage)
+        {
+            self.image = localImage;
+            if (success)
+                success(nil, nil, localImage);
+            return;
+        }
+    }
     
     NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:[NSURL URLWithString:[urlString stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding]]];
     [request setTimeoutInterval:timeInterval];
