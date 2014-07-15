@@ -15,7 +15,7 @@
               timeoutInterval:(NSTimeInterval)timeInterval
              placeholderImage:(UIImage *)placeholderImage {
     
-    NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:[NSURL URLWithString:urlString]];
+    NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:[NSURL URLWithString:[urlString stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding]]];
     [request setTimeoutInterval:timeInterval];
     [request addValue:@"image/*" forHTTPHeaderField:@"Accept"];
     
@@ -28,7 +28,7 @@
                       success:(void (^)(NSURLRequest *request, NSHTTPURLResponse *response, UIImage *image))success
                       failure:(void (^)(NSURLRequest *request, NSHTTPURLResponse *response, NSError *error))failure {
     
-    NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:[NSURL URLWithString:urlString]];
+    NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:[NSURL URLWithString:[urlString stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding]]];
     [request setTimeoutInterval:timeInterval];
     [request addValue:@"image/*" forHTTPHeaderField:@"Accept"];
     
