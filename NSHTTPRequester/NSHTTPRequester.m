@@ -200,6 +200,11 @@ typedef enum
     
     [afNetworkingManager setResponseSerializer:[AFJSONResponseSerializer serializer]];
     
+    // FORCE RESPONSE SERIALIZER TO ACCEPT CONTENT-TYPE (text/html) as well. (thefanclub.com send response with only one content-type : text/html).
+    NSMutableSet *setOfAcceptablesContentTypesInResonse = [afNetworkingManager.responseSerializer.acceptableContentTypes mutableCopy];
+    [setOfAcceptablesContentTypesInResonse addObject:@"text/html"];
+    [afNetworkingManager.responseSerializer setAcceptableContentTypes:setOfAcceptablesContentTypesInResonse];
+    
     // SERVER CACHE POLICY
     if (cacheTTL > 0)
         [afNetworkingManager.requestSerializer setCachePolicy:NSURLRequestReturnCacheDataElseLoad];
@@ -226,13 +231,11 @@ typedef enum
     if (customHttpHeaders && [customHttpHeaders count] > 0)
     {
         [customHttpHeaders enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop)
-        {
-            {
-                [obj enumerateKeysAndObjectsUsingBlock:^(id key, id obj, BOOL *stop)
-                {
-                    [afNetworkingManager.requestSerializer setValue:obj forHTTPHeaderField:key];
-                }];
-            }
+         {
+             [obj enumerateKeysAndObjectsUsingBlock:^(id key, id obj, BOOL *stop)
+              {
+                  [afNetworkingManager.requestSerializer setValue:obj forHTTPHeaderField:key];
+              }];
         }];
     }
     
