@@ -16,6 +16,7 @@
     NSLog(@">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> TEST NSHTTREQUESTER <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<");
     [NSHTTPRequesterTests getTESTS];
     [NSHTTPRequesterTests postTESTS];
+    [NSHTTPRequesterTests uploadFileTESTS];
     NSLog(@">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> DONE <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<");
 }
 
@@ -71,8 +72,10 @@
         else
             NSLog(@"************************ KO ****************************");
     }];
-    
-    
+}
+
++(void)uploadFileTESTS
+{
     
 }
 
