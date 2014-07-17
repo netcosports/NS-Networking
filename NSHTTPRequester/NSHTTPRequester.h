@@ -28,6 +28,7 @@
  *    To conclude, NCSRequester can be used to sign every request specifying the client id and the
  *    client secret only once, or it can be used to sign different requests with multiple credentials.
  */
+
 @property (nonatomic, strong) NSString *NS_CLIENT_ID;
 @property (nonatomic, strong) NSString *NS_CLIENT_SECRET;
 

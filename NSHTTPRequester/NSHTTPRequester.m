@@ -19,11 +19,11 @@
 
 typedef enum
 {
-    eNCSHttpRequestGET,
-    eNCSHttpRequestPOST,
-    eNCSHttpRequestPUT,
-    eNCSHttpRequestDELETE,
-} eNCSHttpRequestType;
+    eNSHttpRequestGET,
+    eNSHttpRequestPOST,
+    eNSHttpRequestPUT,
+    eNSHttpRequestDELETE,
+} eNSHttpRequestType;
 
 @interface NSHTTPRequester()
 {
@@ -43,15 +43,7 @@ typedef enum
     return _sharedClient;
 }
 
--(id)init
-{
-    self = [super init];
-    if (self)
-    { }
-    return self;
-}
-
-#pragma mark - API signature calculation
+#pragma mark - NS Signature System
 +(NSArray *)genSignatureHeaders:(NSString *)clientId
                    clientSecret:(NSString *)clientSecret
                          forUrl:(NSString *)url
@@ -63,7 +55,7 @@ typedef enum
         [signature appendString:@"&"];
     else
         [signature appendString:@"?"];
-    
+
     if (params)
         [signature appendString:[self generateParamsStringFromDictionary:params]];
 
@@ -73,95 +65,40 @@ typedef enum
 
 + (NSString *)generateParamsStringFromDictionary:(NSDictionary *)params
 {
-    NSMutableString *result = [[NSMutableString alloc] init];
-    NSArray *sortedKeys = [[params allKeys] sortedArrayUsingComparator:^NSComparisonResult(id obj1, id obj2)
-    {
-        return [obj1 compare:obj2];
-    }];
-
-    for (NSString *key in sortedKeys)
-    {
-        if ([[params objectForKey:key] isKindOfClass:[NSString class]])
-        {
-            NSString *str = [params objectForKey:key];
-            str = [NSHTTPRequester encodeString:str];
-            [result appendFormat:@"%@=%@&", key, str];
-        }
-    }
-    return result;
+    NSData *jsonData = [NSJSONSerialization dataWithJSONObject:params options:NSJSONWritingPrettyPrinted error:nil];
+    NSString *stringFromJson = [[[[NSString alloc] initWithData:jsonData encoding:NSUTF8StringEncoding] strReplace:@"\n" to:@""] strReplace:@" " to:@""];
+    return [stringFromJson sha1];
 }
-
-+ (NSString *)encodeString:(NSString *)str
-{
-    if (![str isKindOfClass:[NSString class]])
-        return str;
-    
-    str = [str stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding];
-    str = [str stringByReplacingOccurrencesOfString:@"!" withString:@"%21"];
-    str = [str stringByReplacingOccurrencesOfString:@"'" withString:@"%27"];
-    str = [str stringByReplacingOccurrencesOfString:@"(" withString:@"%28"];
-    str = [str stringByReplacingOccurrencesOfString:@")" withString:@"%29"];
-    str = [str stringByReplacingOccurrencesOfString:@"\"" withString:@"%22"];
-    str = [str stringByReplacingOccurrencesOfString:@";" withString:@"%3B"];
-    str = [str stringByReplacingOccurrencesOfString:@":" withString:@"%3A"];
-    str = [str stringByReplacingOccurrencesOfString:@"@" withString:@"%40"];
-    str = [str stringByReplacingOccurrencesOfString:@"&" withString:@"%26"];
-    str = [str stringByReplacingOccurrencesOfString:@"=" withString:@"%3D"];
-    str = [str stringByReplacingOccurrencesOfString:@"+" withString:@"%2B"];
-    str = [str stringByReplacingOccurrencesOfString:@"$" withString:@"%24"];
-    str = [str stringByReplacingOccurrencesOfString:@"," withString:@"%2C"];
-    str = [str stringByReplacingOccurrencesOfString:@"/" withString:@"%2F"];
-    str = [str stringByReplacingOccurrencesOfString:@"?" withString:@"%3F"];
-    str = [str stringByReplacingOccurrencesOfString:@"#" withString:@"%23"];
-    str = [str stringByReplacingOccurrencesOfString:@"[" withString:@"%5B"];
-    str = [str stringByReplacingOccurrencesOfString:@"]" withString:@"%5D"];
-    str = [str stringByReplacingOccurrencesOfString:@"<" withString:@"%3C"];
-    str = [str stringByReplacingOccurrencesOfString:@">" withString:@"%3E"];
-    str = [str stringByReplacingOccurrencesOfString:@"\t" withString:@"%09"];
-    str = [str stringByReplacingOccurrencesOfString:@"\n" withString:@"%0A"];
-    // Already done by stringByAddingPercentEscapesUsingEncoding ?
-    //    str = [str stringByReplacingOccurrencesOfString:@"%" withString:@"%25"];
-    //    str = [str stringByReplacingOccurrencesOfString:@" " withString:@"%20"];
-    //    str = [str stringByReplacingOccurrencesOfString:@"é" withString:@"%C3%A9"];
-    //    str = [str stringByReplacingOccurrencesOfString:@"à" withString:@"%C3%A0"];
-    //    str = [str stringByReplacingOccurrencesOfString:@"ç" withString:@"%C3%A7"];
-    //    str = [str stringByReplacingOccurrencesOfString:@"è" withString:@"%C3%A8"];
-    //    str = [str stringByReplacingOccurrencesOfString:@"ù" withString:@"%C3%B9"];
-    //    str = [str stringByReplacingOccurrencesOfString:@"ô" withString:@"%C3%B4"];
-    
-    return str;
-}
-
 
 #pragma mark - HTTP Methods
 +(void)GET:(NSString *)url usingCacheTTL:(NSInteger)cacheTTL cb_rep:(void(^)(NSDictionary *rep, NSInteger httpCode, BOOL isCached))cb_rep
 {
     NSHTTPRequester *sharedRequester = [NSHTTPRequester sharedRequester];
-    [sharedRequester createAfNetworkingOperationWithUrl:url httpRequestType:eNCSHttpRequestGET jsonRequest:YES parameters:nil usingCacheTTL:cacheTTL andCallBack:cb_rep];
+    [sharedRequester createAfNetworkingOperationWithUrl:url httpRequestType:eNSHttpRequestGET jsonRequest:YES parameters:nil usingCacheTTL:cacheTTL andCallBack:cb_rep];
 }
 
 +(void)POST:(NSString *)url withParameters:(id)params usingCacheTTL:(NSInteger)cacheTTL cb_rep:(void(^)(NSDictionary *rep, NSInteger httpCode, BOOL isCached))cb_rep
 {
     NSHTTPRequester *sharedRequester = [NSHTTPRequester sharedRequester];
-    [sharedRequester createAfNetworkingOperationWithUrl:url httpRequestType:eNCSHttpRequestPOST jsonRequest:YES parameters:params usingCacheTTL:cacheTTL andCallBack:cb_rep];
+    [sharedRequester createAfNetworkingOperationWithUrl:url httpRequestType:eNSHttpRequestPOST jsonRequest:YES parameters:params usingCacheTTL:cacheTTL andCallBack:cb_rep];
 }
 
 +(void)PUT:(NSString *)url withParameters:(id)params usingCacheTTL:(NSInteger)cacheTTL cb_rep:(void(^)(NSDictionary *rep, NSInteger httpCode, BOOL isCached))cb_rep
 {
     NSHTTPRequester *sharedRequester = [NSHTTPRequester sharedRequester];
-    [sharedRequester createAfNetworkingOperationWithUrl:url httpRequestType:eNCSHttpRequestPUT jsonRequest:YES parameters:params usingCacheTTL:cacheTTL andCallBack:cb_rep];
+    [sharedRequester createAfNetworkingOperationWithUrl:url httpRequestType:eNSHttpRequestPUT jsonRequest:YES parameters:params usingCacheTTL:cacheTTL andCallBack:cb_rep];
 }
 
 +(void)DELETE:(NSString *)url withParameters:(id)params usingCacheTTL:(NSInteger)cacheTTL cb_rep:(void(^)(NSDictionary *rep, NSInteger httpCode, BOOL isCached))cb_rep
 {
     NSHTTPRequester *sharedRequester = [NSHTTPRequester sharedRequester];
-    [sharedRequester createAfNetworkingOperationWithUrl:url httpRequestType:eNCSHttpRequestDELETE jsonRequest:YES parameters:params usingCacheTTL:cacheTTL andCallBack:cb_rep];
+    [sharedRequester createAfNetworkingOperationWithUrl:url httpRequestType:eNSHttpRequestDELETE jsonRequest:YES parameters:params usingCacheTTL:cacheTTL andCallBack:cb_rep];
 }
 
 +(void)UPLOAD:(NSString *)url withParameters:(id)params cb_send:(void(^)(long long totalBytesWritten, long long totalBytesExpectedToWrite))cb_send cb_rep:(void(^)(NSDictionary *rep, NSInteger httpCode, BOOL isCached))cb_rep
 {
     NSHTTPRequester *sharedRequester = [NSHTTPRequester sharedRequester];
-    AFHTTPRequestOperation *requestOperation = [sharedRequester createAfNetworkingOperationWithUrl:url httpRequestType:eNCSHttpRequestDELETE jsonRequest:NO parameters:params usingCacheTTL:0 andCallBack:cb_rep];
+    AFHTTPRequestOperation *requestOperation = [sharedRequester createAfNetworkingOperationWithUrl:url httpRequestType:eNSHttpRequestDELETE jsonRequest:NO parameters:params usingCacheTTL:0 andCallBack:cb_rep];
 
     [requestOperation setUploadProgressBlock:^(NSUInteger bytesWritten, long long totalBytesWritten, long long totalBytesExpectedToWrite)
     {
@@ -173,7 +110,7 @@ typedef enum
 }
 
 -(AFHTTPRequestOperation *)createAfNetworkingOperationWithUrl:(NSString *)url
-                          httpRequestType:(eNCSHttpRequestType)httpRequestType
+                          httpRequestType:(eNSHttpRequestType)httpRequestType
                               jsonRequest:(BOOL)requestShouldBeJson
                                parameters:(id)parameters
                                usingCacheTTL:(NSInteger)cacheTTL
@@ -238,7 +175,7 @@ typedef enum
               }];
         }];
     }
-    
+
     // CALLBACKS BLOCKS
     void (^successCompletionBlock)(AFHTTPRequestOperation *operation, id responseObject) = ^(AFHTTPRequestOperation *operation, id responseObject){
         if (cb_rep)
@@ -262,19 +199,19 @@ typedef enum
     
     switch (httpRequestType)
     {
-        case eNCSHttpRequestGET:
+        case eNSHttpRequestGET:
             afNetworkingOperation = [afNetworkingManager GET:url parameters:nil success:successCompletionBlock failure:failureCompletionBlock];
             break;
 
-        case eNCSHttpRequestPOST:
+        case eNSHttpRequestPOST:
             afNetworkingOperation = [afNetworkingManager POST:url parameters:parameters success:successCompletionBlock failure:failureCompletionBlock];
             break;
 
-        case eNCSHttpRequestPUT:
+        case eNSHttpRequestPUT:
             afNetworkingOperation = [afNetworkingManager PUT:url parameters:parameters success:successCompletionBlock failure:failureCompletionBlock];
             break;
 
-        case eNCSHttpRequestDELETE:
+        case eNSHttpRequestDELETE:
             afNetworkingOperation = [afNetworkingManager DELETE:url parameters:nil success:successCompletionBlock failure:failureCompletionBlock];
             break;
 
