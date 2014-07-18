@@ -25,7 +25,7 @@
  *    the specified regex will automatically integrate those custom http header fields.
  *    (To do so, please take a look at addCustomHeaders:forUlrMatchingRegEx:)
  *
- *    To conclude, NCSRequester can be used to sign every request specifying the client id and the
+ *    To conclude, NSHTTPRequester can be used to sign every request specifying the client id and the
  *    client secret only once, or it can be used to sign different requests with multiple credentials.
  */
 
@@ -35,7 +35,7 @@
 +(instancetype)sharedRequester;
 
 /**
- *  HTTP Methods [GET, POST, PUT, DELETE] & Custom UPLOAD using POST with multipart
+ *  HTTP Methods [GET, POST, PUT, DELETE] & Custom UPLOAD using multipart POST
  *
  *  @param url            Entire URL (e.g http://ip.jsontest.com)
  *  @param usingCacheTTL  Defines if the requester should return local client-side cache or not, reguarding the ttl.
@@ -63,11 +63,11 @@
 /**
  *  Netco Sports URLs Signature Generation
  */
-
 +(NSArray *)genSignatureHeaders:(NSString *)clientId
                    clientSecret:(NSString *)clientSecret
                          forUrl:(NSString *)url
-                         params:(NSDictionary *)params;
+                         params:(NSDictionary *)params
+                         isJSON:(BOOL)isJSON;
 /**
  *  Local client-side caching mechanism [Get]
  *
@@ -92,6 +92,24 @@
  *  @param url   Url of the response to cache
  */
 +(void)cacheValue:(id)value forUrl:(NSString *)url;
+
+/**
+ *  Remove all cached data stored on Disk & RAM.
+ *
+ */
++(void)clearCache;
+
+/**
+ *  Cookies
+ *
+ *  @param shouldHandleCookies define the cookie comportment in the http request.
+ */
+-(void)setHTTPShouldHandleCookies:(BOOL)shouldHandleCookies;
+
+/**
+ *  Clear cookies
+ */
++(void)clearCookies;
 
 @end
 

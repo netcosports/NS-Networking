@@ -23,11 +23,13 @@ typedef enum
     eNSHttpRequestPOST,
     eNSHttpRequestPUT,
     eNSHttpRequestDELETE,
+    eNSHttpRequestUPLOAD,
 } eNSHttpRequestType;
 
 @interface NSHTTPRequester()
 {
     NSMutableArray *customHeadersForUrl;
+    BOOL ishandlingCookies;
 }
 @end
 
@@ -43,11 +45,22 @@ typedef enum
     return _sharedClient;
 }
 
+-(id)init
+{
+    self = [super init];
+    if (self)
+    {
+        ishandlingCookies = YES;
+    }
+    return self;
+}
+
 #pragma mark - NS Signature System
 +(NSArray *)genSignatureHeaders:(NSString *)clientId
                    clientSecret:(NSString *)clientSecret
                          forUrl:(NSString *)url
                          params:(NSDictionary *)params
+                         isJSON:(BOOL)isJSON
 {
     NSMutableString *signature = [[NSMutableString alloc] init];
     [signature appendString:url];
@@ -56,18 +69,111 @@ typedef enum
     else
         [signature appendString:@"?"];
 
-    if (params)
-        [signature appendString:[self generateParamsStringFromDictionary:params]];
+    if (params && isJSON)
+        [signature appendString:[self signJSONParams:params]];
+    else if (params && isJSON == NO)
+        [signature appendString:[self signMultiPartParams:params]];
 
     [signature appendFormat:@"@%@:%@", clientId, [[NSString stringWithFormat:@"netcosports%@", clientSecret] sha1]];
     return @[@{HEADER_X_API_CLIENT_ID: clientId}, @{HEADER_X_API_SIG: [signature sha1]}];
 }
 
-+ (NSString *)generateParamsStringFromDictionary:(NSDictionary *)params
++(NSString *)signJSONParams:(NSDictionary *)params
 {
-    NSData *jsonData = [NSJSONSerialization dataWithJSONObject:params options:NSJSONWritingPrettyPrinted error:nil];
-    NSString *stringFromJson = [[[[NSString alloc] initWithData:jsonData encoding:NSUTF8StringEncoding] strReplace:@"\n" to:@""] strReplace:@" " to:@""];
-    return [stringFromJson sha1];
+    NSError *errorJsonSerialization;
+    NSData *jsonData = [NSJSONSerialization dataWithJSONObject:params options:NSJSONWritingPrettyPrinted error:&errorJsonSerialization];
+    if (!errorJsonSerialization)
+    {
+        NSString *stringFromJson = [[NSString alloc] initWithData:jsonData encoding:NSUTF8StringEncoding];
+        return [[NSHTTPRequester cleanJSONString:stringFromJson] sha1];
+    }
+    else
+    {
+        [NSException raise:@"Bad JSON sent to signJSONParams" format:[errorJsonSerialization description], nil];
+        return @"";
+    }
+}
+
++ (NSString *)signMultiPartParams:(NSDictionary *)params
+{
+    NSMutableString *result = [[NSMutableString alloc] init];
+    NSArray *sortedKeys = [[params allKeys] sortedArrayUsingComparator:^NSComparisonResult(id obj1, id obj2)
+    {
+        return [obj1 compare:obj2];
+    }];
+
+    for (NSString *key in sortedKeys)
+    {
+        if ([[params objectForKey:key] isKindOfClass:[NSString class]])
+        {
+            NSString *str = [params objectForKey:key];
+            str = [NSHTTPRequester encodeString:str];
+            [result appendFormat:@"%@=%@&", key, str];
+        }
+    }
+    return result;
+}
+
++(NSString *)cleanJSONString:(NSString *)jsonString
+{
+    if (!jsonString)
+    {
+        DLog(@"Bad json string !");
+        return jsonString;
+    }
+    
+    jsonString = [jsonString strReplace:@"\n" to:@""];
+
+    __block NSMutableIndexSet *indexSetOfCharacterToremove = [[NSMutableIndexSet alloc] init];
+    __block NSInteger numberOfParsedQuotes = 0;
+    
+    [jsonString enumerateSubstringsInRange:NSMakeRange(0, [jsonString length]) options:NSStringEnumerationByComposedCharacterSequences usingBlock:^(NSString *substring, NSRange substringRange, NSRange enclosingRange, BOOL *stop)
+     {
+         if ([substring isEqualToString:@"\""])
+             numberOfParsedQuotes += 1;
+         
+         if ([substring isEqualToString:@" "] && numberOfParsedQuotes % 2 == 0)
+             [indexSetOfCharacterToremove addIndex:substringRange.location];
+     }];
+    
+    __block NSInteger numberOfReplacedCharacters = 0;
+    __block NSMutableString *mutableString = [jsonString mutableCopy];
+    [indexSetOfCharacterToremove enumerateIndexesUsingBlock:^(NSUInteger idx, BOOL *stop)
+    {
+        [mutableString replaceCharactersInRange:NSMakeRange(idx - numberOfReplacedCharacters, 1) withString:@""];
+        numberOfReplacedCharacters += 1;
+    }];
+    return [mutableString ToUnMutable];
+}
+
++ (NSString *)encodeString:(NSString *)str
+{
+    if (![str isKindOfClass:[NSString class]])
+        return str;
+    str = [str stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding];
+    str = [str stringByReplacingOccurrencesOfString:@"!" withString:@"%21"];
+    str = [str stringByReplacingOccurrencesOfString:@"'" withString:@"%27"];
+    str = [str stringByReplacingOccurrencesOfString:@"(" withString:@"%28"];
+    str = [str stringByReplacingOccurrencesOfString:@")" withString:@"%29"];
+    str = [str stringByReplacingOccurrencesOfString:@"\"" withString:@"%22"];
+    str = [str stringByReplacingOccurrencesOfString:@";" withString:@"%3B"];
+    str = [str stringByReplacingOccurrencesOfString:@":" withString:@"%3A"];
+    str = [str stringByReplacingOccurrencesOfString:@"@" withString:@"%40"];
+    str = [str stringByReplacingOccurrencesOfString:@"&" withString:@"%26"];
+    str = [str stringByReplacingOccurrencesOfString:@"=" withString:@"%3D"];
+    str = [str stringByReplacingOccurrencesOfString:@"+" withString:@"%2B"];
+    str = [str stringByReplacingOccurrencesOfString:@"$" withString:@"%24"];
+    str = [str stringByReplacingOccurrencesOfString:@"," withString:@"%2C"];
+    str = [str stringByReplacingOccurrencesOfString:@"/" withString:@"%2F"];
+    str = [str stringByReplacingOccurrencesOfString:@"?" withString:@"%3F"];
+    str = [str stringByReplacingOccurrencesOfString:@"#" withString:@"%23"];
+    str = [str stringByReplacingOccurrencesOfString:@"[" withString:@"%5B"];
+    str = [str stringByReplacingOccurrencesOfString:@"]" withString:@"%5D"];
+    str = [str stringByReplacingOccurrencesOfString:@"<" withString:@"%3C"];
+    str = [str stringByReplacingOccurrencesOfString:@">" withString:@"%3E"];
+    str = [str stringByReplacingOccurrencesOfString:@"\t" withString:@"%09"];
+    str = [str stringByReplacingOccurrencesOfString:@"\n" withString:@"%0A"];
+    return str;
 }
 
 #pragma mark - HTTP Methods
@@ -98,17 +204,17 @@ typedef enum
 +(void)UPLOAD:(NSString *)url withParameters:(id)params cb_send:(void(^)(long long totalBytesWritten, long long totalBytesExpectedToWrite))cb_send cb_rep:(void(^)(NSDictionary *rep, NSInteger httpCode, BOOL isCached))cb_rep
 {
     NSHTTPRequester *sharedRequester = [NSHTTPRequester sharedRequester];
-    AFHTTPRequestOperation *requestOperation = [sharedRequester createAfNetworkingOperationWithUrl:url httpRequestType:eNSHttpRequestDELETE jsonRequest:NO parameters:params usingCacheTTL:0 andCallBack:cb_rep];
+    AFHTTPRequestOperation *requestOperation = [sharedRequester createAfNetworkingOperationWithUrl:url httpRequestType:eNSHttpRequestUPLOAD jsonRequest:NO parameters:params usingCacheTTL:0 andCallBack:cb_rep];
 
     [requestOperation setUploadProgressBlock:^(NSUInteger bytesWritten, long long totalBytesWritten, long long totalBytesExpectedToWrite)
     {
-        double percentDone = (double)totalBytesWritten / (double)totalBytesExpectedToWrite;
-        NSLog(@"progress updated(percentDone) : %f", percentDone);
+//        double percentDone = ((double)totalBytesWritten / (double)totalBytesExpectedToWrite) * 100;
         if (cb_send)
             cb_send(totalBytesWritten, totalBytesExpectedToWrite);
     }];
 }
 
+#pragma mark - Private Creation of Operation
 -(AFHTTPRequestOperation *)createAfNetworkingOperationWithUrl:(NSString *)url
                           httpRequestType:(eNSHttpRequestType)httpRequestType
                               jsonRequest:(BOOL)requestShouldBeJson
@@ -116,7 +222,7 @@ typedef enum
                                usingCacheTTL:(NSInteger)cacheTTL
                               andCallBack:(void(^)(NSDictionary *rep, NSInteger httpCode, BOOL isCached))cb_rep
 {
-    NSLog(@"[NCSRequester] URL => %@", url);
+    NSLog(@"[%@] URL => %@", NSStringFromClass([self class]), url);
     
     // CLIENT CACHE
     if (cacheTTL > 0)
@@ -141,7 +247,10 @@ typedef enum
     NSMutableSet *setOfAcceptablesContentTypesInResonse = [afNetworkingManager.responseSerializer.acceptableContentTypes mutableCopy];
     [setOfAcceptablesContentTypesInResonse addObject:@"text/html"];
     [afNetworkingManager.responseSerializer setAcceptableContentTypes:setOfAcceptablesContentTypesInResonse];
-    
+
+    // COOKIES
+    [afNetworkingManager.requestSerializer setHTTPShouldHandleCookies:ishandlingCookies];
+
     // SERVER CACHE POLICY
     if (cacheTTL > 0)
         [afNetworkingManager.requestSerializer setCachePolicy:NSURLRequestReturnCacheDataElseLoad];
@@ -151,7 +260,7 @@ typedef enum
     // NETCO SPORTS SIGNED HTTP HEADER FIELDS
     if (self.NS_CLIENT_ID && self.NS_CLIENT_SECRET && [self.NS_CLIENT_ID length] > 0 && [self.NS_CLIENT_SECRET length] > 0)
     {
-        [[NSHTTPRequester genSignatureHeaders:self.NS_CLIENT_ID clientSecret:self.NS_CLIENT_SECRET forUrl:url params:parameters] enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop)
+        [[NSHTTPRequester genSignatureHeaders:self.NS_CLIENT_ID clientSecret:self.NS_CLIENT_SECRET forUrl:url params:parameters isJSON:requestShouldBeJson] enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop)
         {
             if (obj && [obj isKindOfClass:[NSDictionary class]])
             {
@@ -195,8 +304,8 @@ typedef enum
             }];
         }
     };
+
     AFHTTPRequestOperation *afNetworkingOperation = nil;
-    
     switch (httpRequestType)
     {
         case eNSHttpRequestGET:
@@ -215,6 +324,30 @@ typedef enum
             afNetworkingOperation = [afNetworkingManager DELETE:url parameters:nil success:successCompletionBlock failure:failureCompletionBlock];
             break;
 
+        case eNSHttpRequestUPLOAD:
+        {
+            afNetworkingOperation = [afNetworkingManager POST:url parameters:parameters constructingBodyWithBlock:^(id<AFMultipartFormData> formData)
+            {
+                UIImage *imageToUpload = [parameters getXpathNil:@"image" type:[UIImage class]];
+                NSString *mimeType = [parameters getXpathNilString:@"mimetype"];
+                NSString *fileName = [parameters getXpathNilString:@"filename"];
+                
+                if (imageToUpload)
+                {
+                    NSData *imageData = UIImageJPEGRepresentation(imageToUpload, 0.5);
+                    NSString *impliedFileName = [imageToUpload accessibilityIdentifier];
+                    if (!impliedFileName || [impliedFileName length] == 0)
+                    {
+                        if (fileName)
+                            impliedFileName = fileName;
+                        else
+                            impliedFileName = @"file";
+                    }
+                    [formData appendPartWithFileData:imageData name:@"file" fileName:impliedFileName mimeType:mimeType];
+                }
+            } success:successCompletionBlock failure:failureCompletionBlock];
+        } break;
+            
         default:
             afNetworkingOperation = [afNetworkingManager GET:url parameters:nil success:successCompletionBlock failure:failureCompletionBlock];
             break;
@@ -234,29 +367,6 @@ typedef enum
     return afNetworkingOperation;
 }
 
-#pragma mark - Caching
-
-+(id)getCacheValueForUrl:(NSString *)url andTTL:(NSInteger)ttlFile
-{
-    NSDictionary *cachedResponse = [NSDictionary getDataFromFileCache:[url md5] temps:(int)ttlFile del:NO];
-    NSLog(@"[NCSRequester] Cache returned => %@", url);
-    return cachedResponse;
-}
-
-+(void)removeCacheForUrl:(NSString*)url
-{
-	[NSObject removeFileCache:[url md5]];
-}
-
-+(void)cacheValue:(id)value forUrl:(NSString *)url
-{
-    if (value && [value isKindOfClass:[NSDictionary class]])
-    {
-        NSLog(@"[NCSRequester] Cache saved => %@", url);
-        [value setDataSaveNSDictionaryCache:[url md5]];
-    }
-}
-
 #pragma mark - Custom HTTP Headers
 
 -(void) addCustomHeaders:(NSArray *)headers forUlrMatchingRegEx:(NSString *)regExUrl
@@ -270,7 +380,7 @@ typedef enum
 {
     if (!customHeadersForUrl)
         return nil;
-
+    
     for (NSDictionary *element in customHeadersForUrl)
     {
         NSArray *headers = [element getXpathNilArray:@"headers"];
@@ -285,6 +395,63 @@ typedef enum
         }
     }
     return nil;
+}
+
+#pragma mark - Caching
+
++(id)getCacheValueForUrl:(NSString *)url andTTL:(NSInteger)ttlFile
+{
+    NSDictionary *cachedResponse = [NSDictionary getDataFromFileCache:[url md5] temps:(int)ttlFile del:NO];
+    NSLog(@"[%@] Cache returned => %@", NSStringFromClass([self class]), url);
+    return cachedResponse;
+}
+
++(void)removeCacheForUrl:(NSString*)url
+{
+	[NSObject removeFileCache:[url md5]];
+}
+
++(void)clearCache
+{
+    [[NSURLCache sharedURLCache] removeAllCachedResponses];
+    
+    NSError *error;
+    NSArray* tmpDirectory = [[NSFileManager defaultManager] contentsOfDirectoryAtPath:NSTemporaryDirectory() error:&error];
+    if (!error)
+    {
+        for (NSString *file in tmpDirectory)
+            [[NSFileManager defaultManager] removeItemAtPath:[NSString stringWithFormat:@"%@%@", NSTemporaryDirectory(), file] error:&error];
+    }
+    else
+    {
+        DLog(@"[%@] Error accessing temporary directory: %@", NSStringFromClass([self class]), [error description]);
+    }
+}
+
++(void)cacheValue:(id)value forUrl:(NSString *)url
+{
+    if (value && [value isKindOfClass:[NSDictionary class]])
+    {
+        NSLog(@"[%@] Cache saved => %@", NSStringFromClass([self class]), url);
+        [value setDataSaveNSDictionaryCache:[url md5]];
+    }
+}
+
+#pragma mark - Cookies
+
+-(void)setHTTPShouldHandleCookies:(BOOL)shouldHandleCookies
+{
+    ishandlingCookies = shouldHandleCookies;
+}
+
++(void)clearCookies
+{
+    NSHTTPCookieStorage *storage = [NSHTTPCookieStorage sharedHTTPCookieStorage];
+    if (storage && [[storage cookies] count])
+    {
+        for (NSHTTPCookie *cookie in [storage cookies])
+            [storage deleteCookie:cookie];
+    }
 }
 
 @end
