@@ -42,6 +42,7 @@ Explanation:
 
 
 <b><i>Further controls</i></b>
+
 <i>Custom http headers</i>:
 ```
 -(void)addCustomHeaders:(NSArray *)headers forUlrMatchingRegEx:(NSString *)regExUrl;
