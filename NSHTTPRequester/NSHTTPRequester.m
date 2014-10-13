@@ -321,7 +321,7 @@ typedef enum
             break;
 
         case eNSHttpRequestDELETE:
-            afNetworkingOperation = [afNetworkingManager DELETE:url parameters:nil success:successCompletionBlock failure:failureCompletionBlock];
+            afNetworkingOperation = [afNetworkingManager DELETE:url parameters:parameters success:successCompletionBlock failure:failureCompletionBlock];
             break;
 
         case eNSHttpRequestUPLOAD:
