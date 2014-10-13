@@ -36,7 +36,7 @@ Explanation:
 <ul>
 <li>NSHTTPRequester is based on AFNetworking, it can be used for basics HTTP calls (GET, POST, PUT, DELETE) and a custom POST for uploading pictures (UPLOAD).</li>
 <li>It automatically signed each urls according to the Netco Sports Url Signature System (old & new algorithm included).</li>
-<li>Each methods require a url, some parameters if needed, a cache TTL for the local cache control and a completition (with a dictionary for the response, the http status code and a boolean value describing wether the returned value comes from the local cache or not as block's parameters).</li>
+<li>Each methods require a url, some parameters if needed, a cache TTL for the local cache control and a completion block (with a dictionary for the response, the http status code and a boolean value describing wether the returned value comes from the local cache or not as block's parameters).</li>
 <li>Remote cache is http complient, it is based on the cache-control http header field.</li>
 </ul>
 
