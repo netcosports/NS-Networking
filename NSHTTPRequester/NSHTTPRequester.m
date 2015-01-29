@@ -253,7 +253,7 @@ typedef enum
 
     // SERVER CACHE POLICY
     if (cacheTTL > 0)
-        [afNetworkingManager.requestSerializer setCachePolicy:NSURLRequestReturnCacheDataElseLoad];
+        [afNetworkingManager.requestSerializer setCachePolicy:NSURLRequestUseProtocolCachePolicy];
     else
         [afNetworkingManager.requestSerializer setCachePolicy:NSURLRequestReloadIgnoringLocalAndRemoteCacheData];
     
