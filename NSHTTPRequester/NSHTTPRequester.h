@@ -42,15 +42,15 @@
  *  @param cb_rep         Block callback response when a response is received
  *                        (with the JSON body, the http status code, and boolean describing if the response comes from local cache or not)
  */
-+(void)GET:(NSString *)url usingCacheTTL:(NSInteger)cacheTTL cb_rep:(void(^)(NSDictionary *rep, NSInteger httpCode, BOOL isCached))cb_rep;
++(void)GET:(NSString *)url usingCacheTTL:(NSInteger)cacheTTL cb_rep:(void(^)(NSDictionary *response, NSInteger httpCode, BOOL isCached))cb_rep;
 
-+(void)POST:(NSString *)url withParameters:(id)params usingCacheTTL:(NSInteger)cacheTTL cb_rep:(void(^)(NSDictionary *rep, NSInteger httpCode, BOOL isCached))cb_rep;
++(void)POST:(NSString *)url withParameters:(id)params usingCacheTTL:(NSInteger)cacheTTL cb_rep:(void(^)(NSDictionary *response, NSInteger httpCode, BOOL isCached))cb_rep;
 
-+(void)PUT:(NSString *)url withParameters:(id)params usingCacheTTL:(NSInteger)cacheTTL cb_rep:(void(^)(NSDictionary *rep, NSInteger httpCode, BOOL isCached))cb_rep;
++(void)PUT:(NSString *)url withParameters:(id)params usingCacheTTL:(NSInteger)cacheTTL cb_rep:(void(^)(NSDictionary *response, NSInteger httpCode, BOOL isCached))cb_rep;
 
-+(void)DELETE:(NSString *)url withParameters:(id)params usingCacheTTL:(NSInteger)cacheTTL cb_rep:(void(^)(NSDictionary *rep, NSInteger httpCode, BOOL isCached))cb_rep;
++(void)DELETE:(NSString *)url withParameters:(id)params usingCacheTTL:(NSInteger)cacheTTL cb_rep:(void(^)(NSDictionary *response, NSInteger httpCode, BOOL isCached))cb_rep;
 
-+(void)UPLOAD:(NSString *)url withParameters:(id)params cb_send:(void(^)(long long totalBytesWritten, long long totalBytesExpectedToWrite))cb_send cb_rep:(void(^)(NSDictionary *rep, NSInteger httpCode, BOOL isCached))cb_rep;
++(void)UPLOAD:(NSString *)url withParameters:(id)params cb_send:(void(^)(long long totalBytesWritten, long long totalBytesExpectedToWrite))cb_send cb_rep:(void(^)(NSDictionary *response, NSInteger httpCode, BOOL isCached))cb_rep;
 
 /**
  *  Custom Headers Management

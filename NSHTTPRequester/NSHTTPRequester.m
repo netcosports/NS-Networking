@@ -177,31 +177,31 @@ typedef enum
 }
 
 #pragma mark - HTTP Methods
-+(void)GET:(NSString *)url usingCacheTTL:(NSInteger)cacheTTL cb_rep:(void(^)(NSDictionary *rep, NSInteger httpCode, BOOL isCached))cb_rep
++(void)GET:(NSString *)url usingCacheTTL:(NSInteger)cacheTTL cb_rep:(void(^)(NSDictionary *response, NSInteger httpCode, BOOL isCached))cb_rep
 {
     NSHTTPRequester *sharedRequester = [NSHTTPRequester sharedRequester];
     [sharedRequester createAfNetworkingOperationWithUrl:url httpRequestType:eNSHttpRequestGET jsonRequest:YES parameters:nil usingCacheTTL:cacheTTL andCallBack:cb_rep];
 }
 
-+(void)POST:(NSString *)url withParameters:(id)params usingCacheTTL:(NSInteger)cacheTTL cb_rep:(void(^)(NSDictionary *rep, NSInteger httpCode, BOOL isCached))cb_rep
++(void)POST:(NSString *)url withParameters:(id)params usingCacheTTL:(NSInteger)cacheTTL cb_rep:(void(^)(NSDictionary *response, NSInteger httpCode, BOOL isCached))cb_rep
 {
     NSHTTPRequester *sharedRequester = [NSHTTPRequester sharedRequester];
     [sharedRequester createAfNetworkingOperationWithUrl:url httpRequestType:eNSHttpRequestPOST jsonRequest:YES parameters:params usingCacheTTL:cacheTTL andCallBack:cb_rep];
 }
 
-+(void)PUT:(NSString *)url withParameters:(id)params usingCacheTTL:(NSInteger)cacheTTL cb_rep:(void(^)(NSDictionary *rep, NSInteger httpCode, BOOL isCached))cb_rep
++(void)PUT:(NSString *)url withParameters:(id)params usingCacheTTL:(NSInteger)cacheTTL cb_rep:(void(^)(NSDictionary *response, NSInteger httpCode, BOOL isCached))cb_rep
 {
     NSHTTPRequester *sharedRequester = [NSHTTPRequester sharedRequester];
     [sharedRequester createAfNetworkingOperationWithUrl:url httpRequestType:eNSHttpRequestPUT jsonRequest:YES parameters:params usingCacheTTL:cacheTTL andCallBack:cb_rep];
 }
 
-+(void)DELETE:(NSString *)url withParameters:(id)params usingCacheTTL:(NSInteger)cacheTTL cb_rep:(void(^)(NSDictionary *rep, NSInteger httpCode, BOOL isCached))cb_rep
++(void)DELETE:(NSString *)url withParameters:(id)params usingCacheTTL:(NSInteger)cacheTTL cb_rep:(void(^)(NSDictionary *response, NSInteger httpCode, BOOL isCached))cb_rep
 {
     NSHTTPRequester *sharedRequester = [NSHTTPRequester sharedRequester];
     [sharedRequester createAfNetworkingOperationWithUrl:url httpRequestType:eNSHttpRequestDELETE jsonRequest:YES parameters:params usingCacheTTL:cacheTTL andCallBack:cb_rep];
 }
 
-+(void)UPLOAD:(NSString *)url withParameters:(id)params cb_send:(void(^)(long long totalBytesWritten, long long totalBytesExpectedToWrite))cb_send cb_rep:(void(^)(NSDictionary *rep, NSInteger httpCode, BOOL isCached))cb_rep
++(void)UPLOAD:(NSString *)url withParameters:(id)params cb_send:(void(^)(long long totalBytesWritten, long long totalBytesExpectedToWrite))cb_send cb_rep:(void(^)(NSDictionary *response, NSInteger httpCode, BOOL isCached))cb_rep
 {
     NSHTTPRequester *sharedRequester = [NSHTTPRequester sharedRequester];
     AFHTTPRequestOperation *requestOperation = [sharedRequester createAfNetworkingOperationWithUrl:url httpRequestType:eNSHttpRequestUPLOAD jsonRequest:NO parameters:params usingCacheTTL:0 andCallBack:cb_rep];
@@ -220,7 +220,7 @@ typedef enum
                               jsonRequest:(BOOL)requestShouldBeJson
                                parameters:(id)parameters
                                usingCacheTTL:(NSInteger)cacheTTL
-                              andCallBack:(void(^)(NSDictionary *rep, NSInteger httpCode, BOOL isCached))cb_rep
+                              andCallBack:(void(^)(NSDictionary *response, NSInteger httpCode, BOOL isCached))cb_rep
 {
     NSLog(@"[%@] URL => %@", NSStringFromClass([self class]), url);
     
