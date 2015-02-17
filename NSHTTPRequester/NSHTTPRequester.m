@@ -17,15 +17,6 @@
 #define HEADER_X_API_CLIENT_ID  @"X-Api-Client-Id"
 #define HEADER_X_API_SIG        @"X-Api-Sig"
 
-typedef enum
-{
-    eNSHttpRequestGET,
-    eNSHttpRequestPOST,
-    eNSHttpRequestPUT,
-    eNSHttpRequestDELETE,
-    eNSHttpRequestUPLOAD,
-} eNSHttpRequestType;
-
 @interface NSHTTPRequester()
 {
     NSMutableArray *customHeadersForUrl;
@@ -287,6 +278,7 @@ typedef enum
 
     // CALLBACKS BLOCKS
     void (^successCompletionBlock)(AFHTTPRequestOperation *operation, id responseObject) = ^(AFHTTPRequestOperation *operation, id responseObject){
+        [NSHTTPRequester sharedRequester].requestOperation = operation;
         if (cb_rep)
         {
             [NSHTTPRequester cacheValue:responseObject forUrl:url]; // Store a Cached version of the response every time it's called.
@@ -297,6 +289,7 @@ typedef enum
         }
     };
     void (^failureCompletionBlock)(AFHTTPRequestOperation *operation, NSError *error) = ^(AFHTTPRequestOperation *operation, NSError *error){
+        [NSHTTPRequester sharedRequester].requestOperation = operation;
         if (cb_rep)
         {
             [NSObject mainThreadBlock:^{

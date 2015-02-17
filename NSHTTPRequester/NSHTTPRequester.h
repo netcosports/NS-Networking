@@ -10,6 +10,17 @@
 #import "AFHTTPSessionManager.h"
 #import "AFHTTPRequestOperationManager.h"
 
+
+typedef enum
+{
+    eNSHttpRequestGET,
+    eNSHttpRequestPOST,
+    eNSHttpRequestPUT,
+    eNSHttpRequestDELETE,
+    eNSHttpRequestUPLOAD,
+} eNSHttpRequestType;
+
+
 @interface NSHTTPRequester : NSObject
 
 /**
@@ -31,6 +42,9 @@
 
 @property (nonatomic, strong) NSString *NS_CLIENT_ID;
 @property (nonatomic, strong) NSString *NS_CLIENT_SECRET;
+
+@property (nonatomic, strong) AFHTTPRequestOperation *requestOperation;
+
 
 +(instancetype)sharedRequester;
 
