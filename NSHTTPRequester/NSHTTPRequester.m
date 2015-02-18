@@ -168,31 +168,31 @@
 }
 
 #pragma mark - HTTP Methods
-+(void)GET:(NSString *)url usingCacheTTL:(NSInteger)cacheTTL cb_rep:(void(^)(NSDictionary *response, NSInteger httpCode, BOOL isCached))cb_rep
++(void)GET:(NSString *)url usingCacheTTL:(NSInteger)cacheTTL cb_rep:(void(^)(NSDictionary *response, NSInteger httpCode, AFHTTPRequestOperation *requestOperation, NSError *error, BOOL isCached))cb_rep
 {
     NSHTTPRequester *sharedRequester = [NSHTTPRequester sharedRequester];
     [sharedRequester createAfNetworkingOperationWithUrl:url httpRequestType:eNSHttpRequestGET jsonRequest:YES parameters:nil usingCacheTTL:cacheTTL andCallBack:cb_rep];
 }
 
-+(void)POST:(NSString *)url withParameters:(id)params usingCacheTTL:(NSInteger)cacheTTL cb_rep:(void(^)(NSDictionary *response, NSInteger httpCode, BOOL isCached))cb_rep
++(void)POST:(NSString *)url withParameters:(id)params usingCacheTTL:(NSInteger)cacheTTL cb_rep:(void(^)(NSDictionary *response, NSInteger httpCode, AFHTTPRequestOperation *requestOperation, NSError *error, BOOL isCached))cb_rep
 {
     NSHTTPRequester *sharedRequester = [NSHTTPRequester sharedRequester];
     [sharedRequester createAfNetworkingOperationWithUrl:url httpRequestType:eNSHttpRequestPOST jsonRequest:YES parameters:params usingCacheTTL:cacheTTL andCallBack:cb_rep];
 }
 
-+(void)PUT:(NSString *)url withParameters:(id)params usingCacheTTL:(NSInteger)cacheTTL cb_rep:(void(^)(NSDictionary *response, NSInteger httpCode, BOOL isCached))cb_rep
++(void)PUT:(NSString *)url withParameters:(id)params usingCacheTTL:(NSInteger)cacheTTL cb_rep:(void(^)(NSDictionary *response, NSInteger httpCode, AFHTTPRequestOperation *requestOperation, NSError *error, BOOL isCached))cb_rep
 {
     NSHTTPRequester *sharedRequester = [NSHTTPRequester sharedRequester];
     [sharedRequester createAfNetworkingOperationWithUrl:url httpRequestType:eNSHttpRequestPUT jsonRequest:YES parameters:params usingCacheTTL:cacheTTL andCallBack:cb_rep];
 }
 
-+(void)DELETE:(NSString *)url withParameters:(id)params usingCacheTTL:(NSInteger)cacheTTL cb_rep:(void(^)(NSDictionary *response, NSInteger httpCode, BOOL isCached))cb_rep
++(void)DELETE:(NSString *)url withParameters:(id)params usingCacheTTL:(NSInteger)cacheTTL cb_rep:(void(^)(NSDictionary *response, NSInteger httpCode, AFHTTPRequestOperation *requestOperation, NSError *error, BOOL isCached))cb_rep
 {
     NSHTTPRequester *sharedRequester = [NSHTTPRequester sharedRequester];
     [sharedRequester createAfNetworkingOperationWithUrl:url httpRequestType:eNSHttpRequestDELETE jsonRequest:YES parameters:params usingCacheTTL:cacheTTL andCallBack:cb_rep];
 }
 
-+(void)UPLOAD:(NSString *)url withParameters:(id)params cb_send:(void(^)(long long totalBytesWritten, long long totalBytesExpectedToWrite))cb_send cb_rep:(void(^)(NSDictionary *response, NSInteger httpCode, BOOL isCached))cb_rep
++(void)UPLOAD:(NSString *)url withParameters:(id)params cb_send:(void(^)(long long totalBytesWritten, long long totalBytesExpectedToWrite))cb_send cb_rep:(void(^)(NSDictionary *response, NSInteger httpCode, AFHTTPRequestOperation *requestOperation, NSError *error, BOOL isCached))cb_rep
 {
     NSHTTPRequester *sharedRequester = [NSHTTPRequester sharedRequester];
     AFHTTPRequestOperation *requestOperation = [sharedRequester createAfNetworkingOperationWithUrl:url httpRequestType:eNSHttpRequestUPLOAD jsonRequest:NO parameters:params usingCacheTTL:0 andCallBack:cb_rep];
@@ -211,7 +211,7 @@
                               jsonRequest:(BOOL)requestShouldBeJson
                                parameters:(id)parameters
                                usingCacheTTL:(NSInteger)cacheTTL
-                              andCallBack:(void(^)(NSDictionary *response, NSInteger httpCode, BOOL isCached))cb_rep
+                              andCallBack:(void(^)(NSDictionary *response, NSInteger httpCode, AFHTTPRequestOperation *requestOperation, NSError *error, BOOL isCached))cb_rep
 {
     NSLog(@"[%@] URL => %@", NSStringFromClass([self class]), url);
     
@@ -221,7 +221,7 @@
         NSDictionary *localCachedResponse = [NSHTTPRequester getCacheValueForUrl:url andTTL:cacheTTL];
         [NSObject mainThreadBlock:^{
             if (cb_rep && localCachedResponse)
-                cb_rep(localCachedResponse, 0, YES);
+                cb_rep(localCachedResponse, 0, nil, nil, YES);
         }];
 	}
 
@@ -278,22 +278,20 @@
 
     // CALLBACKS BLOCKS
     void (^successCompletionBlock)(AFHTTPRequestOperation *operation, id responseObject) = ^(AFHTTPRequestOperation *operation, id responseObject){
-        [NSHTTPRequester sharedRequester].requestOperation = operation;
+        [NSHTTPRequester cacheValue:responseObject forUrl:url]; // Store a Cached version of the response every time it's called.
+        
         if (cb_rep)
         {
-            [NSHTTPRequester cacheValue:responseObject forUrl:url]; // Store a Cached version of the response every time it's called.
-
             [NSObject mainThreadBlock:^{
-                cb_rep(responseObject, [operation.response statusCode],NO);
+                cb_rep(responseObject, [operation.response statusCode], operation, nil, NO);
             }];
         }
     };
     void (^failureCompletionBlock)(AFHTTPRequestOperation *operation, NSError *error) = ^(AFHTTPRequestOperation *operation, NSError *error){
-        [NSHTTPRequester sharedRequester].requestOperation = operation;
         if (cb_rep)
         {
             [NSObject mainThreadBlock:^{
-                cb_rep(operation.responseObject, [operation.response statusCode], NO);
+                cb_rep(operation.responseObject, [operation.response statusCode], operation, error, NO);
             }];
         }
     };
