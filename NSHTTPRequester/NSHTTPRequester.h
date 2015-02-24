@@ -73,6 +73,13 @@ typedef enum
 -(void)addCustomHeaders:(NSArray *)headers forUlrMatchingRegEx:(NSString *)regExUrl;
 
 /**
+ *  Clean custom headers
+ *
+ *  @param regExUrl Regular Expression of Urls
+ */
+-(void) cleanCustomHeadersForUrlMatchingRegEx:(NSString *)regExUrl;
+
+/**
  *  Netco Sports URLs Signature Generation
  */
 +(NSArray *)genSignatureHeaders:(NSString *)clientId

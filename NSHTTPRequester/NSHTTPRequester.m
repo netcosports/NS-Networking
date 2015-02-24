@@ -367,8 +367,32 @@
     [customHeadersForUrl addObject:@{@"headers" : headers, @"urlRegEx" : regExUrl}];
 }
 
+-(void) cleanCustomHeadersForUrlMatchingRegEx:(NSString *)regExUrl
+{
+    if (!customHeadersForUrl)
+        return ;
+    
+    for (NSDictionary *element in customHeadersForUrl)
+    {
+        NSArray *headers = [element getXpathNilArray:@"headers"];
+        NSString *urlRegEx = [element getXpathNilString:@"urlRegEx"];
+        
+        if (element && headers && urlRegEx)
+        {
+            NSError *error;
+            NSRegularExpression *regex = [NSRegularExpression regularExpressionWithPattern:urlRegEx options:NSRegularExpressionCaseInsensitive error:&error];
+            if ([regex numberOfMatchesInString:regExUrl options:0 range:NSMakeRange(0, [regExUrl length])] > 0)
+            {
+                [element setValue:@[] forKey:urlRegEx];
+            }
+        }
+    }
+}
+
 -(NSArray *) getCustomHeadersForUrl:(NSString *)url
 {
+    NSMutableArray *arrayOfCustomHeaders = [NSMutableArray new];
+    
     if (!customHeadersForUrl)
         return nil;
     
@@ -382,10 +406,10 @@
             NSError *error;
             NSRegularExpression *regex = [NSRegularExpression regularExpressionWithPattern:urlRegEx options:NSRegularExpressionCaseInsensitive error:&error];
             if ([regex numberOfMatchesInString:url options:0 range:NSMakeRange(0, [url length])] > 0)
-                return headers;
+                [arrayOfCustomHeaders addObjectsFromArray:headers];
         }
     }
-    return nil;
+    return [arrayOfCustomHeaders ToUnMutable];
 }
 
 #pragma mark - Caching
