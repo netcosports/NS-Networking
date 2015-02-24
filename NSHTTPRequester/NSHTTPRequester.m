@@ -372,6 +372,8 @@
     if (!customHeadersForUrl)
         return ;
     
+    NSMutableIndexSet *indexSet = [[NSMutableIndexSet alloc] init];
+    
     for (NSDictionary *element in customHeadersForUrl)
     {
         NSArray *headers = [element getXpathNilArray:@"headers"];
@@ -383,10 +385,11 @@
             NSRegularExpression *regex = [NSRegularExpression regularExpressionWithPattern:urlRegEx options:NSRegularExpressionCaseInsensitive error:&error];
             if ([regex numberOfMatchesInString:regExUrl options:0 range:NSMakeRange(0, [regExUrl length])] > 0)
             {
-                [element setValue:@[] forKey:urlRegEx];
+                [indexSet addIndex:[customHeadersForUrl indexOfObject:element]];
             }
         }
     }
+    [customHeadersForUrl removeObjectsAtIndexes:indexSet];
 }
 
 -(NSArray *) getCustomHeadersForUrl:(NSString *)url
