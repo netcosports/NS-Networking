@@ -17,13 +17,6 @@
 #define HEADER_X_API_CLIENT_ID  @"X-Api-Client-Id"
 #define HEADER_X_API_SIG        @"X-Api-Sig"
 
-@interface NSHTTPRequester()
-{
-    NSMutableArray *customHeadersForUrl;
-    BOOL ishandlingCookies;
-}
-@end
-
 @implementation NSHTTPRequester
 
 + (instancetype)sharedRequester
@@ -41,7 +34,7 @@
     self = [super init];
     if (self)
     {
-        ishandlingCookies = YES;
+        self.ishandlingCookies = YES;
     }
     return self;
 }
@@ -240,7 +233,7 @@
     [afNetworkingManager.responseSerializer setAcceptableContentTypes:setOfAcceptablesContentTypesInResonse];
 
     // COOKIES
-    [afNetworkingManager.requestSerializer setHTTPShouldHandleCookies:ishandlingCookies];
+    [afNetworkingManager.requestSerializer setHTTPShouldHandleCookies:self.ishandlingCookies];
 
     // SERVER CACHE POLICY
     if (cacheTTL > 0)
@@ -362,19 +355,19 @@
 
 -(void) addCustomHeaders:(NSArray *)headers forUlrMatchingRegEx:(NSString *)regExUrl
 {
-    if (!customHeadersForUrl)
-        customHeadersForUrl = [NSMutableArray new];
-    [customHeadersForUrl addObject:@{@"headers" : headers, @"urlRegEx" : regExUrl}];
+    if (!self.customHeadersForUrl)
+        self.customHeadersForUrl = [NSMutableArray new];
+    [self.customHeadersForUrl addObject:@{@"headers" : headers, @"urlRegEx" : regExUrl}];
 }
 
 -(void) cleanCustomHeadersForUrlMatchingRegEx:(NSString *)regExUrl
 {
-    if (!customHeadersForUrl)
+    if (!self.customHeadersForUrl)
         return ;
     
     NSMutableIndexSet *indexSet = [[NSMutableIndexSet alloc] init];
     
-    for (NSDictionary *element in customHeadersForUrl)
+    for (NSDictionary *element in self.customHeadersForUrl)
     {
         NSArray *headers = [element getXpathNilArray:@"headers"];
         NSString *urlRegEx = [element getXpathNilString:@"urlRegEx"];
@@ -385,21 +378,21 @@
             NSRegularExpression *regex = [NSRegularExpression regularExpressionWithPattern:urlRegEx options:NSRegularExpressionCaseInsensitive error:&error];
             if ([regex numberOfMatchesInString:regExUrl options:0 range:NSMakeRange(0, [regExUrl length])] > 0)
             {
-                [indexSet addIndex:[customHeadersForUrl indexOfObject:element]];
+                [indexSet addIndex:[self.customHeadersForUrl indexOfObject:element]];
             }
         }
     }
-    [customHeadersForUrl removeObjectsAtIndexes:indexSet];
+    [self.customHeadersForUrl removeObjectsAtIndexes:indexSet];
 }
 
 -(NSArray *) getCustomHeadersForUrl:(NSString *)url
 {
     NSMutableArray *arrayOfCustomHeaders = [NSMutableArray new];
     
-    if (!customHeadersForUrl)
+    if (!self.customHeadersForUrl)
         return nil;
     
-    for (NSDictionary *element in customHeadersForUrl)
+    for (NSDictionary *element in self.customHeadersForUrl)
     {
         NSArray *headers = [element getXpathNilArray:@"headers"];
         NSString *urlRegEx = [element getXpathNilString:@"urlRegEx"];
@@ -459,7 +452,7 @@
 
 -(void)setHTTPShouldHandleCookies:(BOOL)shouldHandleCookies
 {
-    ishandlingCookies = shouldHandleCookies;
+    self.ishandlingCookies = shouldHandleCookies;
 }
 
 +(void)clearCookies

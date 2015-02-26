@@ -40,6 +40,10 @@ typedef enum
  *    client secret only once, or it can be used to sign different requests with multiple credentials.
  */
 
+@property (nonatomic, strong) NSMutableArray *customHeadersForUrl;
+@property (nonatomic, assign) BOOL ishandlingCookies;
+
+
 @property (nonatomic, strong) NSString *NS_CLIENT_ID;
 @property (nonatomic, strong) NSString *NS_CLIENT_SECRET;
 
@@ -129,6 +133,8 @@ typedef enum
  *  Clear cookies
  */
 +(void)clearCookies;
+
+-(NSArray *) getCustomHeadersForUrl:(NSString *)url;
 
 @end
 
