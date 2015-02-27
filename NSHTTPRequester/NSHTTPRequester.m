@@ -413,7 +413,7 @@
 +(id)getCacheValueForUrl:(NSString *)url andTTL:(NSInteger)ttlFile
 {
     NSDictionary *cachedResponse = [NSDictionary getDataFromFileCache:[url md5] temps:(int)ttlFile del:NO];
-    NSLog(@"[%@] Cache returned => %@", NSStringFromClass([self class]), url);
+    DLog(@"[%@] Cache returned => %@", NSStringFromClass([self class]), url);
     return cachedResponse;
 }
 
@@ -443,7 +443,7 @@
 {
     if (value && [value isKindOfClass:[NSDictionary class]])
     {
-        NSLog(@"[%@] Cache saved => %@", NSStringFromClass([self class]), url);
+        DLog(@"[%@] Cache saved => %@", NSStringFromClass([self class]), url);
         [value setDataSaveNSDictionaryCache:[url md5]];
     }
 }
