@@ -7,15 +7,24 @@
 //
 
 #import <CommonCrypto/CommonDigest.h>
+#import "NSHTTPRequester.h"
+#import "NSHTTPRequester+Private.h"
+#import "NSHTTPRequester+Properties.h"
+#import "NSHTTPRequester+Cache.h"
+
 #import "NSDictionary+NSDictionary_File.h"
 #import "NSObject+NSObject_Xpath.h"
 #import "NSString+NSString_Tool.h"
 #import "NSObject+NSObject_File.h"
 #import "NSObject+NSObject_Tool.h"
-#import "NSHTTPRequester.h"
 
 #define HEADER_X_API_CLIENT_ID  @"X-Api-Client-Id"
 #define HEADER_X_API_SIG        @"X-Api-Sig"
+
+@interface NSHTTPRequester()
+{
+}
+@end
 
 @implementation NSHTTPRequester
 
@@ -35,6 +44,7 @@
     if (self)
     {
         self.ishandlingCookies = YES;
+        self.generalTimeout = 30;
     }
     return self;
 }
@@ -227,9 +237,12 @@
     
     [afNetworkingManager setResponseSerializer:[AFJSONResponseSerializer serializer]];
     
-    // FORCE RESPONSE SERIALIZER TO ACCEPT CONTENT-TYPE (text/html) as well. (thefanclub.com send response with only one content-type : text/html).
+    // FORCE RESPONSE SERIALIZER TO ACCEPT CONTENT-TYPE (text/html & text/plain) as well.
+    // (thefanclub.com send response with only one content-type : text/html).
+    // json mocks usually do not use application/json but text/plain instead.
     NSMutableSet *setOfAcceptablesContentTypesInResonse = [afNetworkingManager.responseSerializer.acceptableContentTypes mutableCopy];
     [setOfAcceptablesContentTypesInResonse addObject:@"text/html"];
+    [setOfAcceptablesContentTypesInResonse addObject:@"text/plain"];
     [afNetworkingManager.responseSerializer setAcceptableContentTypes:setOfAcceptablesContentTypesInResonse];
 
     // COOKIES
@@ -256,6 +269,10 @@
         }];
     }
 
+    // CUSTOM TIMEOUT
+    CGFloat timeoutForUrl = [self getCustomTimeoutsForUrl:url];
+    [afNetworkingManager.requestSerializer setTimeoutInterval:timeoutForUrl];
+    
     // CUSTOM HTTP HEADER FIELDS
     NSArray *customHttpHeaders = [self getCustomHeadersForUrl:url];
     if (customHttpHeaders && [customHttpHeaders count] > 0)
@@ -349,103 +366,6 @@
          }];
     }
     return afNetworkingOperation;
-}
-
-#pragma mark - Custom HTTP Headers
-
--(void) addCustomHeaders:(NSArray *)headers forUlrMatchingRegEx:(NSString *)regExUrl
-{
-    if (!self.customHeadersForUrl)
-        self.customHeadersForUrl = [NSMutableArray new];
-    [self.customHeadersForUrl addObject:@{@"headers" : headers, @"urlRegEx" : regExUrl}];
-}
-
--(void) cleanCustomHeadersForUrlMatchingRegEx:(NSString *)regExUrl
-{
-    if (!self.customHeadersForUrl)
-        return ;
-    
-    NSMutableIndexSet *indexSet = [[NSMutableIndexSet alloc] init];
-    
-    for (NSDictionary *element in self.customHeadersForUrl)
-    {
-        NSArray *headers = [element getXpathNilArray:@"headers"];
-        NSString *urlRegEx = [element getXpathNilString:@"urlRegEx"];
-        
-        if (element && headers && urlRegEx)
-        {
-            NSError *error;
-            NSRegularExpression *regex = [NSRegularExpression regularExpressionWithPattern:urlRegEx options:NSRegularExpressionCaseInsensitive error:&error];
-            if ([regex numberOfMatchesInString:regExUrl options:0 range:NSMakeRange(0, [regExUrl length])] > 0)
-            {
-                [indexSet addIndex:[self.customHeadersForUrl indexOfObject:element]];
-            }
-        }
-    }
-    [self.customHeadersForUrl removeObjectsAtIndexes:indexSet];
-}
-
--(NSArray *) getCustomHeadersForUrl:(NSString *)url
-{
-    NSMutableArray *arrayOfCustomHeaders = [NSMutableArray new];
-    
-    if (!self.customHeadersForUrl)
-        return nil;
-    
-    for (NSDictionary *element in self.customHeadersForUrl)
-    {
-        NSArray *headers = [element getXpathNilArray:@"headers"];
-        NSString *urlRegEx = [element getXpathNilString:@"urlRegEx"];
-        
-        if (element && headers && urlRegEx)
-        {
-            NSError *error;
-            NSRegularExpression *regex = [NSRegularExpression regularExpressionWithPattern:urlRegEx options:NSRegularExpressionCaseInsensitive error:&error];
-            if ([regex numberOfMatchesInString:url options:0 range:NSMakeRange(0, [url length])] > 0)
-                [arrayOfCustomHeaders addObjectsFromArray:headers];
-        }
-    }
-    return [arrayOfCustomHeaders ToUnMutable];
-}
-
-#pragma mark - Caching
-
-+(id)getCacheValueForUrl:(NSString *)url andTTL:(NSInteger)ttlFile
-{
-    NSDictionary *cachedResponse = [NSDictionary getDataFromFileCache:[url md5] temps:(int)ttlFile del:NO];
-    DLog(@"[%@] Cache returned => %@", NSStringFromClass([self class]), url);
-    return cachedResponse;
-}
-
-+(void)removeCacheForUrl:(NSString*)url
-{
-	[NSObject removeFileCache:[url md5]];
-}
-
-+(void)clearCache
-{
-    [[NSURLCache sharedURLCache] removeAllCachedResponses];
-    
-    NSError *error;
-    NSArray* tmpDirectory = [[NSFileManager defaultManager] contentsOfDirectoryAtPath:NSTemporaryDirectory() error:&error];
-    if (!error)
-    {
-        for (NSString *file in tmpDirectory)
-            [[NSFileManager defaultManager] removeItemAtPath:[NSString stringWithFormat:@"%@%@", NSTemporaryDirectory(), file] error:&error];
-    }
-    else
-    {
-        DLog(@"[%@] Error accessing temporary directory: %@", NSStringFromClass([self class]), [error description]);
-    }
-}
-
-+(void)cacheValue:(id)value forUrl:(NSString *)url
-{
-    if (value && [value isKindOfClass:[NSDictionary class]])
-    {
-        DLog(@"[%@] Cache saved => %@", NSStringFromClass([self class]), url);
-        [value setDataSaveNSDictionaryCache:[url md5]];
-    }
 }
 
 #pragma mark - Cookies
