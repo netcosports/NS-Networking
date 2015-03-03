@@ -17,7 +17,7 @@ typedef enum
 
 @interface NSHTTPRequester (Properties)
 
-#pragma mark Custom HTTP Headers
+#pragma mark - Custom HTTP Headers
 
 /**
  *  Add custom HTTP Headers to all requests using an url responding to the regular expression
@@ -43,7 +43,7 @@ typedef enum
  */
 -(NSArray *) getCustomHeadersForUrl:(NSString *)url;
 
-#pragma mark Custom Timeout
+#pragma mark - Custom Timeout
 
 /**
  *  Add custom Timeout to all requests using an url responding to the regular expression
