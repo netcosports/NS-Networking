@@ -111,12 +111,14 @@
 {
     if (!headers || ![headers isKindOfClass:[NSArray class]])
     {
-        DLog(@"Bad headers passed");
+        if (self.verbose)
+            DLog(@"Bad headers passed");
         return;
     }
     if (!regExUrl)
     {
-        DLog(@"Bad url regex");
+        if (self.verbose)
+            DLog(@"Bad url regex");
         return;
     }
     [self addCustomValue:headers withPropertyType:eNSHttpPropertyHeader forUrlsMatchingRegEx:regExUrl];
@@ -126,7 +128,8 @@
 {
     if (!regExUrl)
     {
-        DLog(@"Bad url regex");
+        if (self.verbose)
+            DLog(@"Bad url regex");
         return;
     }
     [self cleanCustomValuesWithPropertyType:eNSHttpPropertyHeader forUrlsMatchingRegEx:regExUrl];
@@ -136,7 +139,8 @@
 {
     if (!url)
     {
-        DLog(@"Bad url");
+        if (self.verbose)
+            DLog(@"Bad url");
         return @[];
     }
     return [self getCustomValuesWithPropertyType:eNSHttpPropertyHeader forUrl:url];
@@ -148,12 +152,14 @@
 {
     if (secondsTimeout < 0)
     {
-        DLog(@"Bad timeout passed");
+        if (self.verbose)
+            DLog(@"Bad timeout passed");
         return;
     }
     if (!regExUrl)
     {
-        DLog(@"Bad url regex");
+        if (self.verbose)
+            DLog(@"Bad url regex");
         return;
     }
     [self addCustomValue:[NSNumber numberWithDouble:secondsTimeout] withPropertyType:eNSHttpPropertyTimeout forUrlsMatchingRegEx:regExUrl];
@@ -163,7 +169,8 @@
 {
     if (!regExUrl)
     {
-        DLog(@"Bad url regex");
+        if (self.verbose)
+            DLog(@"Bad url regex");
         return;
     }
     [self cleanCustomValuesWithPropertyType:eNSHttpPropertyTimeout forUrlsMatchingRegEx:regExUrl];
@@ -174,7 +181,8 @@
 {
     if (!url)
     {
-        DLog(@"Bad url");
+        if (self.verbose)
+            DLog(@"Bad url");
         return self.generalTimeout;
     }
     
@@ -187,4 +195,6 @@
 }
 
 @end
+
+
 

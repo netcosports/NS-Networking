@@ -44,7 +44,8 @@ typedef enum
 @property (nonatomic, strong) NSString *NS_CLIENT_ID;
 @property (nonatomic, strong) NSString *NS_CLIENT_SECRET;
 
-@property (nonatomic, assign) NSTimeInterval generalTimeout;
+@property (nonatomic, assign) NSTimeInterval generalTimeout; // Default is set to 20sec
+@property (nonatomic, assign) BOOL verbose; // Default is YES
 
 /**
  *  Singleton pattern

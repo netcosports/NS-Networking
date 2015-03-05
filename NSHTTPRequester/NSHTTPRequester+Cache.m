@@ -18,7 +18,8 @@
 +(id)getCacheValueForUrl:(NSString *)url andTTL:(NSInteger)ttlFile
 {
     NSDictionary *cachedResponse = [NSDictionary getDataFromFileCache:[url md5] temps:(int)ttlFile del:NO];
-    DLog(@"[%@] Cache returned => %@", NSStringFromClass([self class]), url);
+    if ([NSHTTPRequester sharedRequester].verbose)
+        DLog(@"[%@] Cache returned => %@", NSStringFromClass([self class]), url);
     return cachedResponse;
 }
 
@@ -40,7 +41,8 @@
     }
     else
     {
-        DLog(@"[%@] Error accessing temporary directory: %@", NSStringFromClass([self class]), [error description]);
+        if ([NSHTTPRequester sharedRequester].verbose)
+            DLog(@"[%@] Error accessing temporary directory: %@", NSStringFromClass([self class]), [error description]);
     }
 }
 
@@ -48,7 +50,8 @@
 {
     if (value && [value isKindOfClass:[NSDictionary class]])
     {
-        DLog(@"[%@] Cache saved => %@", NSStringFromClass([self class]), url);
+        if ([NSHTTPRequester sharedRequester].verbose)
+            DLog(@"[%@] Cache saved => %@", NSStringFromClass([self class]), url);
         [value setDataSaveNSDictionaryCache:[url md5]];
     }
 }

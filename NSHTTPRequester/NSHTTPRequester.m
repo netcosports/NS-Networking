@@ -44,7 +44,8 @@
     if (self)
     {
         self.ishandlingCookies = YES;
-        self.generalTimeout = 30;
+        self.generalTimeout = 20;
+        self.verbose = YES;
     }
     return self;
 }
@@ -112,7 +113,8 @@
 {
     if (!jsonString)
     {
-        DLog(@"Bad json string !");
+        if ([NSHTTPRequester sharedRequester].verbose)
+            DLog(@"Bad json string !");
         return jsonString;
     }
     
@@ -216,7 +218,7 @@
                                usingCacheTTL:(NSInteger)cacheTTL
                               andCallBack:(void(^)(NSDictionary *response, NSInteger httpCode, AFHTTPRequestOperation *requestOperation, NSError *error, BOOL isCached))cb_rep
 {
-    NSLog(@"[%@] URL => %@", NSStringFromClass([self class]), url);
+    [self printUrl:url forRequestType:httpRequestType];
     
     // CLIENT CACHE
     if (cacheTTL > 0)
@@ -366,6 +368,26 @@
          }];
     }
     return afNetworkingOperation;
+}
+
+-(void)printUrl:(NSString *)url forRequestType:(eNSHttpRequestType)requestType
+{
+    NSString *httpMethod = @"";
+    
+    if (requestType == eNSHttpRequestGET)
+        httpMethod = @"GET";
+    else if (requestType == eNSHttpRequestPOST)
+        httpMethod = @"POST";
+    else if (requestType == eNSHttpRequestPUT)
+        httpMethod = @"PUT";
+    else if (requestType == eNSHttpRequestDELETE)
+        httpMethod = @"DELETE";
+    else if (requestType == eNSHttpRequestUPLOAD)
+        httpMethod = @"UPLOAD (multipart POST)";
+    else
+        httpMethod = @"";
+    
+   NSLog(@"[%@] %@ => %@", httpMethod, NSStringFromClass([self class]), url);
 }
 
 #pragma mark - Cookies
