@@ -10,7 +10,6 @@
 #import "AFHTTPSessionManager.h"
 #import "AFHTTPRequestOperationManager.h"
 
-
 typedef enum
 {
     eNSHttpRequestGET,
@@ -34,20 +33,25 @@ typedef enum
  * 2) Another way to use the NSUSS for a custom use is to set some specific http header fields
  *    for some URLS described by a Regular Expression. In other words, all request's urls matching
  *    the specified regex will automatically integrate those custom http header fields.
- *    (To do so, please take a look at addCustomHeaders:forUlrMatchingRegEx:)
+ *    (To do so, please take a look at addCustomHeaders:forUlrMatchingRegEx: in the Category "Properties")
  *
  *    To conclude, NSHTTPRequester can be used to sign every request specifying the client id and the
  *    client secret only once, or it can be used to sign different requests with multiple credentials.
  */
 
-@property (nonatomic, strong) NSMutableArray *customHeadersForUrl;
 @property (nonatomic, assign) BOOL ishandlingCookies;
-
 
 @property (nonatomic, strong) NSString *NS_CLIENT_ID;
 @property (nonatomic, strong) NSString *NS_CLIENT_SECRET;
 
+@property (nonatomic, assign) NSTimeInterval generalTimeout; // Default is set to 20sec
+@property (nonatomic, assign) BOOL verbose; // Default is YES
 
+/**
+ *  Singleton pattern
+ *
+ *  @return NSHTTPRequester object
+ */
 +(instancetype)sharedRequester;
 
 /**
@@ -58,30 +62,16 @@ typedef enum
  *  @param cb_rep         Block callback response when a response is received
  *                        (with the JSON body, the http status code, and boolean describing if the response comes from local cache or not)
  */
-+(void)GET:(NSString *)url usingCacheTTL:(NSInteger)cacheTTL cb_rep:(void(^)(NSDictionary *response, NSInteger httpCode, AFHTTPRequestOperation *requestOperation, NSError *error, BOOL isCached))cb_rep;
++(void)GET:(NSString *)url usingCacheTTL:(NSInteger)cacheTTL andCompletionBlock:(void(^)(NSDictionary *response, NSInteger httpCode, AFHTTPRequestOperation *requestOperation, NSError *error, BOOL isCached))completion;
 
-+(void)POST:(NSString *)url withParameters:(id)params usingCacheTTL:(NSInteger)cacheTTL cb_rep:(void(^)(NSDictionary *response, NSInteger httpCode, AFHTTPRequestOperation *requestOperation, NSError *error, BOOL isCached))cb_rep;
++(void)POST:(NSString *)url withParameters:(id)params andCompletionBlock:(void(^)(NSDictionary *response, NSInteger httpCode, AFHTTPRequestOperation *requestOperation, NSError *error))completion;
 
-+(void)PUT:(NSString *)url withParameters:(id)params usingCacheTTL:(NSInteger)cacheTTL cb_rep:(void(^)(NSDictionary *response, NSInteger httpCode, AFHTTPRequestOperation *requestOperation, NSError *error, BOOL isCached))cb_rep;
++(void)PUT:(NSString *)url withParameters:(id)params andCompletionBlock:(void(^)(NSDictionary *response, NSInteger httpCode, AFHTTPRequestOperation *requestOperation, NSError *error))completion;
 
-+(void)DELETE:(NSString *)url withParameters:(id)params usingCacheTTL:(NSInteger)cacheTTL cb_rep:(void(^)(NSDictionary *response, NSInteger httpCode, AFHTTPRequestOperation *requestOperation, NSError *error, BOOL isCached))cb_rep;
++(void)DELETE:(NSString *)url withParameters:(id)params andCompletionBlock:(void(^)(NSDictionary *response, NSInteger httpCode, AFHTTPRequestOperation *requestOperation, NSError *error))completion;
 
-+(void)UPLOAD:(NSString *)url withParameters:(id)params cb_send:(void(^)(long long totalBytesWritten, long long totalBytesExpectedToWrite))cb_send cb_rep:(void(^)(NSDictionary *response, NSInteger httpCode, AFHTTPRequestOperation *requestOperation, NSError *error, BOOL isCached))cb_rep;
++(void)UPLOAD:(NSString *)url withParameters:(id)params sendingBlock:(void(^)(long long totalBytesWritten, long long totalBytesExpectedToWrite, double percentageUploaded))sending andCompletionBlock:(void(^)(NSDictionary *response, NSInteger httpCode, AFHTTPRequestOperation *requestOperation, NSError *error))completion;
 
-/**
- *  Custom Headers Management
- *
- *  @param headers  Desired Headers for all Urls matching the regExUrl param
- *  @param regExUrl Regular Expression of Urls
- */
--(void)addCustomHeaders:(NSArray *)headers forUlrMatchingRegEx:(NSString *)regExUrl;
-
-/**
- *  Clean custom headers
- *
- *  @param regExUrl Regular Expression of Urls
- */
--(void) cleanCustomHeadersForUrlMatchingRegEx:(NSString *)regExUrl;
 
 /**
  *  Netco Sports URLs Signature Generation
@@ -91,36 +81,6 @@ typedef enum
                          forUrl:(NSString *)url
                          params:(NSDictionary *)params
                          isJSON:(BOOL)isJSON;
-/**
- *  Local client-side caching mechanism [Get]
- *
- *  @param url     Url for which to save a cached version of the response
- *  @param ttlFile TTL on the file to get the cache from.
- *
- *  @return The cached reponse
- */
-+(id)getCacheValueForUrl:(NSString *)url andTTL:(NSInteger)ttlFile;
-
-/**
- *  Local client-side caching mechanism [Remove]
- *
- *  @param url Url for which the cache should be removed.
- */
-+(void)removeCacheForUrl:(NSString*)url;
-
-/**
- *  Local client-side caching mechanism [Save]
- *
- *  @param value Response to cache
- *  @param url   Url of the response to cache
- */
-+(void)cacheValue:(id)value forUrl:(NSString *)url;
-
-/**
- *  Remove all cached data stored on Disk & RAM.
- *
- */
-+(void)clearCache;
 
 /**
  *  Cookies
@@ -133,8 +93,6 @@ typedef enum
  *  Clear cookies
  */
 +(void)clearCookies;
-
--(NSArray *) getCustomHeadersForUrl:(NSString *)url;
 
 @end
 

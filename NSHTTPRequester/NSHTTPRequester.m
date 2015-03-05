@@ -7,15 +7,24 @@
 //
 
 #import <CommonCrypto/CommonDigest.h>
+#import "NSHTTPRequester.h"
+#import "NSHTTPRequester+Private.h"
+#import "NSHTTPRequester+Properties.h"
+#import "NSHTTPRequester+Cache.h"
+
 #import "NSDictionary+NSDictionary_File.h"
 #import "NSObject+NSObject_Xpath.h"
 #import "NSString+NSString_Tool.h"
 #import "NSObject+NSObject_File.h"
 #import "NSObject+NSObject_Tool.h"
-#import "NSHTTPRequester.h"
 
 #define HEADER_X_API_CLIENT_ID  @"X-Api-Client-Id"
 #define HEADER_X_API_SIG        @"X-Api-Sig"
+
+@interface NSHTTPRequester()
+{
+}
+@end
 
 @implementation NSHTTPRequester
 
@@ -35,6 +44,8 @@
     if (self)
     {
         self.ishandlingCookies = YES;
+        self.generalTimeout = 20;
+        self.verbose = YES;
     }
     return self;
 }
@@ -102,7 +113,8 @@
 {
     if (!jsonString)
     {
-        DLog(@"Bad json string !");
+        if ([NSHTTPRequester sharedRequester].verbose)
+            DLog(@"Bad json string !");
         return jsonString;
     }
     
@@ -161,40 +173,56 @@
 }
 
 #pragma mark - HTTP Methods
-+(void)GET:(NSString *)url usingCacheTTL:(NSInteger)cacheTTL cb_rep:(void(^)(NSDictionary *response, NSInteger httpCode, AFHTTPRequestOperation *requestOperation, NSError *error, BOOL isCached))cb_rep
++(void)GET:(NSString *)url usingCacheTTL:(NSInteger)cacheTTL andCompletionBlock:(void(^)(NSDictionary *response, NSInteger httpCode, AFHTTPRequestOperation *requestOperation, NSError *error, BOOL isCached))completion
 {
     NSHTTPRequester *sharedRequester = [NSHTTPRequester sharedRequester];
-    [sharedRequester createAfNetworkingOperationWithUrl:url httpRequestType:eNSHttpRequestGET jsonRequest:YES parameters:nil usingCacheTTL:cacheTTL andCallBack:cb_rep];
+    [sharedRequester createAfNetworkingOperationWithUrl:url httpRequestType:eNSHttpRequestGET jsonRequest:YES parameters:nil usingCacheTTL:cacheTTL andCallBack:completion];
 }
 
-+(void)POST:(NSString *)url withParameters:(id)params usingCacheTTL:(NSInteger)cacheTTL cb_rep:(void(^)(NSDictionary *response, NSInteger httpCode, AFHTTPRequestOperation *requestOperation, NSError *error, BOOL isCached))cb_rep
++(void)POST:(NSString *)url withParameters:(id)params andCompletionBlock:(void(^)(NSDictionary *response, NSInteger httpCode, AFHTTPRequestOperation *requestOperation, NSError *error))completion
 {
     NSHTTPRequester *sharedRequester = [NSHTTPRequester sharedRequester];
-    [sharedRequester createAfNetworkingOperationWithUrl:url httpRequestType:eNSHttpRequestPOST jsonRequest:YES parameters:params usingCacheTTL:cacheTTL andCallBack:cb_rep];
+    [sharedRequester createAfNetworkingOperationWithUrl:url httpRequestType:eNSHttpRequestPOST jsonRequest:YES parameters:params usingCacheTTL:0 andCallBack:^(NSDictionary *response, NSInteger httpCode, AFHTTPRequestOperation *requestOperation, NSError *error, BOOL isCached)
+     {
+         if (completion)
+             completion(response, httpCode, requestOperation, error);
+     }];
 }
 
-+(void)PUT:(NSString *)url withParameters:(id)params usingCacheTTL:(NSInteger)cacheTTL cb_rep:(void(^)(NSDictionary *response, NSInteger httpCode, AFHTTPRequestOperation *requestOperation, NSError *error, BOOL isCached))cb_rep
++(void)PUT:(NSString *)url withParameters:(id)params andCompletionBlock:(void(^)(NSDictionary *response, NSInteger httpCode, AFHTTPRequestOperation *requestOperation, NSError *error))completion
 {
     NSHTTPRequester *sharedRequester = [NSHTTPRequester sharedRequester];
-    [sharedRequester createAfNetworkingOperationWithUrl:url httpRequestType:eNSHttpRequestPUT jsonRequest:YES parameters:params usingCacheTTL:cacheTTL andCallBack:cb_rep];
+    [sharedRequester createAfNetworkingOperationWithUrl:url httpRequestType:eNSHttpRequestPUT jsonRequest:YES parameters:params usingCacheTTL:0 andCallBack:^(NSDictionary *response, NSInteger httpCode, AFHTTPRequestOperation *requestOperation, NSError *error, BOOL isCached)
+     {
+         if (completion)
+             completion(response, httpCode, requestOperation, error);
+     }];
 }
 
-+(void)DELETE:(NSString *)url withParameters:(id)params usingCacheTTL:(NSInteger)cacheTTL cb_rep:(void(^)(NSDictionary *response, NSInteger httpCode, AFHTTPRequestOperation *requestOperation, NSError *error, BOOL isCached))cb_rep
++(void)DELETE:(NSString *)url withParameters:(id)params andCompletionBlock:(void(^)(NSDictionary *response, NSInteger httpCode, AFHTTPRequestOperation *requestOperation, NSError *error))completion
 {
     NSHTTPRequester *sharedRequester = [NSHTTPRequester sharedRequester];
-    [sharedRequester createAfNetworkingOperationWithUrl:url httpRequestType:eNSHttpRequestDELETE jsonRequest:YES parameters:params usingCacheTTL:cacheTTL andCallBack:cb_rep];
+    [sharedRequester createAfNetworkingOperationWithUrl:url httpRequestType:eNSHttpRequestDELETE jsonRequest:YES parameters:params usingCacheTTL:0 andCallBack:^(NSDictionary *response, NSInteger httpCode, AFHTTPRequestOperation *requestOperation, NSError *error, BOOL isCached)
+    {
+        if (completion)
+            completion(response, httpCode, requestOperation, error);
+    }];
 }
 
-+(void)UPLOAD:(NSString *)url withParameters:(id)params cb_send:(void(^)(long long totalBytesWritten, long long totalBytesExpectedToWrite))cb_send cb_rep:(void(^)(NSDictionary *response, NSInteger httpCode, AFHTTPRequestOperation *requestOperation, NSError *error, BOOL isCached))cb_rep
++(void)UPLOAD:(NSString *)url withParameters:(id)params sendingBlock:(void(^)(long long totalBytesWritten, long long totalBytesExpectedToWrite, double percentageUploaded))sending andCompletionBlock:(void(^)(NSDictionary *response, NSInteger httpCode, AFHTTPRequestOperation *requestOperation, NSError *error))completion
 {
     NSHTTPRequester *sharedRequester = [NSHTTPRequester sharedRequester];
-    AFHTTPRequestOperation *requestOperation = [sharedRequester createAfNetworkingOperationWithUrl:url httpRequestType:eNSHttpRequestUPLOAD jsonRequest:NO parameters:params usingCacheTTL:0 andCallBack:cb_rep];
+    AFHTTPRequestOperation *requestOperation = [sharedRequester createAfNetworkingOperationWithUrl:url httpRequestType:eNSHttpRequestUPLOAD jsonRequest:NO parameters:params usingCacheTTL:0 andCallBack:^(NSDictionary *response, NSInteger httpCode, AFHTTPRequestOperation *requestOperation, NSError *error, BOOL isCached)
+    {
+        if (completion)
+            completion(response, httpCode, requestOperation, error);
+    }];
 
     [requestOperation setUploadProgressBlock:^(NSUInteger bytesWritten, long long totalBytesWritten, long long totalBytesExpectedToWrite)
     {
-//        double percentDone = ((double)totalBytesWritten / (double)totalBytesExpectedToWrite) * 100;
-        if (cb_send)
-            cb_send(totalBytesWritten, totalBytesExpectedToWrite);
+        double percentDone = ((double)totalBytesWritten / (double)totalBytesExpectedToWrite) * 100;
+        if (sending)
+            sending(totalBytesWritten, totalBytesExpectedToWrite, percentDone);
     }];
 }
 
@@ -206,10 +234,10 @@
                                usingCacheTTL:(NSInteger)cacheTTL
                               andCallBack:(void(^)(NSDictionary *response, NSInteger httpCode, AFHTTPRequestOperation *requestOperation, NSError *error, BOOL isCached))cb_rep
 {
-    NSLog(@"[%@] URL => %@", NSStringFromClass([self class]), url);
+    [self printUrl:url forRequestType:httpRequestType];
     
     // CLIENT CACHE
-    if (cacheTTL > 0)
+    if (cacheTTL > 0 && httpRequestType == eNSHttpRequestGET)
     {
         NSDictionary *localCachedResponse = [NSHTTPRequester getCacheValueForUrl:url andTTL:cacheTTL];
         [NSObject mainThreadBlock:^{
@@ -227,9 +255,12 @@
     
     [afNetworkingManager setResponseSerializer:[AFJSONResponseSerializer serializer]];
     
-    // FORCE RESPONSE SERIALIZER TO ACCEPT CONTENT-TYPE (text/html) as well. (thefanclub.com send response with only one content-type : text/html).
+    // FORCE RESPONSE SERIALIZER TO ACCEPT CONTENT-TYPE (text/html & text/plain) as well.
+    // (thefanclub.com send response with only one content-type : text/html).
+    // json mocks usually do not use application/json but text/plain instead.
     NSMutableSet *setOfAcceptablesContentTypesInResonse = [afNetworkingManager.responseSerializer.acceptableContentTypes mutableCopy];
     [setOfAcceptablesContentTypesInResonse addObject:@"text/html"];
+    [setOfAcceptablesContentTypesInResonse addObject:@"text/plain"];
     [afNetworkingManager.responseSerializer setAcceptableContentTypes:setOfAcceptablesContentTypesInResonse];
 
     // COOKIES
@@ -256,6 +287,10 @@
         }];
     }
 
+    // CUSTOM TIMEOUT
+    CGFloat timeoutForUrl = [self getCustomTimeoutsForUrl:url];
+    [afNetworkingManager.requestSerializer setTimeoutInterval:timeoutForUrl];
+    
     // CUSTOM HTTP HEADER FIELDS
     NSArray *customHttpHeaders = [self getCustomHeadersForUrl:url];
     if (customHttpHeaders && [customHttpHeaders count] > 0)
@@ -270,8 +305,10 @@
     }
 
     // CALLBACKS BLOCKS
-    void (^successCompletionBlock)(AFHTTPRequestOperation *operation, id responseObject) = ^(AFHTTPRequestOperation *operation, id responseObject){
-        [NSHTTPRequester cacheValue:responseObject forUrl:url]; // Store a Cached version of the response every time it's called.
+    void (^successCompletionBlock)(AFHTTPRequestOperation *operation, id responseObject) = ^(AFHTTPRequestOperation *operation, id responseObject)
+    {
+        if (httpRequestType == eNSHttpRequestGET)
+            [NSHTTPRequester cacheValue:responseObject forUrl:url]; // Store a Cached version of the response every time it's called.
         
         if (cb_rep)
         {
@@ -280,7 +317,8 @@
             }];
         }
     };
-    void (^failureCompletionBlock)(AFHTTPRequestOperation *operation, NSError *error) = ^(AFHTTPRequestOperation *operation, NSError *error){
+    void (^failureCompletionBlock)(AFHTTPRequestOperation *operation, NSError *error) = ^(AFHTTPRequestOperation *operation, NSError *error)
+    {
         if (cb_rep)
         {
             [NSObject mainThreadBlock:^{
@@ -351,101 +389,24 @@
     return afNetworkingOperation;
 }
 
-#pragma mark - Custom HTTP Headers
-
--(void) addCustomHeaders:(NSArray *)headers forUlrMatchingRegEx:(NSString *)regExUrl
+-(void)printUrl:(NSString *)url forRequestType:(eNSHttpRequestType)requestType
 {
-    if (!self.customHeadersForUrl)
-        self.customHeadersForUrl = [NSMutableArray new];
-    [self.customHeadersForUrl addObject:@{@"headers" : headers, @"urlRegEx" : regExUrl}];
-}
-
--(void) cleanCustomHeadersForUrlMatchingRegEx:(NSString *)regExUrl
-{
-    if (!self.customHeadersForUrl)
-        return ;
+    NSString *httpMethod = @"";
     
-    NSMutableIndexSet *indexSet = [[NSMutableIndexSet alloc] init];
-    
-    for (NSDictionary *element in self.customHeadersForUrl)
-    {
-        NSArray *headers = [element getXpathNilArray:@"headers"];
-        NSString *urlRegEx = [element getXpathNilString:@"urlRegEx"];
-        
-        if (element && headers && urlRegEx)
-        {
-            NSError *error;
-            NSRegularExpression *regex = [NSRegularExpression regularExpressionWithPattern:urlRegEx options:NSRegularExpressionCaseInsensitive error:&error];
-            if ([regex numberOfMatchesInString:regExUrl options:0 range:NSMakeRange(0, [regExUrl length])] > 0)
-            {
-                [indexSet addIndex:[self.customHeadersForUrl indexOfObject:element]];
-            }
-        }
-    }
-    [self.customHeadersForUrl removeObjectsAtIndexes:indexSet];
-}
-
--(NSArray *) getCustomHeadersForUrl:(NSString *)url
-{
-    NSMutableArray *arrayOfCustomHeaders = [NSMutableArray new];
-    
-    if (!self.customHeadersForUrl)
-        return nil;
-    
-    for (NSDictionary *element in self.customHeadersForUrl)
-    {
-        NSArray *headers = [element getXpathNilArray:@"headers"];
-        NSString *urlRegEx = [element getXpathNilString:@"urlRegEx"];
-        
-        if (element && headers && urlRegEx)
-        {
-            NSError *error;
-            NSRegularExpression *regex = [NSRegularExpression regularExpressionWithPattern:urlRegEx options:NSRegularExpressionCaseInsensitive error:&error];
-            if ([regex numberOfMatchesInString:url options:0 range:NSMakeRange(0, [url length])] > 0)
-                [arrayOfCustomHeaders addObjectsFromArray:headers];
-        }
-    }
-    return [arrayOfCustomHeaders ToUnMutable];
-}
-
-#pragma mark - Caching
-
-+(id)getCacheValueForUrl:(NSString *)url andTTL:(NSInteger)ttlFile
-{
-    NSDictionary *cachedResponse = [NSDictionary getDataFromFileCache:[url md5] temps:(int)ttlFile del:NO];
-    DLog(@"[%@] Cache returned => %@", NSStringFromClass([self class]), url);
-    return cachedResponse;
-}
-
-+(void)removeCacheForUrl:(NSString*)url
-{
-	[NSObject removeFileCache:[url md5]];
-}
-
-+(void)clearCache
-{
-    [[NSURLCache sharedURLCache] removeAllCachedResponses];
-    
-    NSError *error;
-    NSArray* tmpDirectory = [[NSFileManager defaultManager] contentsOfDirectoryAtPath:NSTemporaryDirectory() error:&error];
-    if (!error)
-    {
-        for (NSString *file in tmpDirectory)
-            [[NSFileManager defaultManager] removeItemAtPath:[NSString stringWithFormat:@"%@%@", NSTemporaryDirectory(), file] error:&error];
-    }
+    if (requestType == eNSHttpRequestGET)
+        httpMethod = @"GET";
+    else if (requestType == eNSHttpRequestPOST)
+        httpMethod = @"POST";
+    else if (requestType == eNSHttpRequestPUT)
+        httpMethod = @"PUT";
+    else if (requestType == eNSHttpRequestDELETE)
+        httpMethod = @"DELETE";
+    else if (requestType == eNSHttpRequestUPLOAD)
+        httpMethod = @"UPLOAD (multipart POST)";
     else
-    {
-        DLog(@"[%@] Error accessing temporary directory: %@", NSStringFromClass([self class]), [error description]);
-    }
-}
-
-+(void)cacheValue:(id)value forUrl:(NSString *)url
-{
-    if (value && [value isKindOfClass:[NSDictionary class]])
-    {
-        DLog(@"[%@] Cache saved => %@", NSStringFromClass([self class]), url);
-        [value setDataSaveNSDictionaryCache:[url md5]];
-    }
+        httpMethod = @"";
+    
+   NSLog(@"[%@] %@ => %@", NSStringFromClass([self class]), httpMethod, url);
 }
 
 #pragma mark - Cookies
