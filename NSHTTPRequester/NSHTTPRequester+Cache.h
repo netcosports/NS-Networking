@@ -18,7 +18,7 @@
  *
  *  @return The cached reponse
  */
-+(id)getCacheValueForUrl:(NSString *)url andTTL:(NSInteger)ttlFile;
++(id)getCacheValueForUrl:(NSString *)url andTTL:(NSUInteger)ttlFile;
 
 /**
  *  Local client-side caching mechanism [Remove]

@@ -12,7 +12,6 @@
 #import "NSHTTPRequester+Properties.h"
 #import "NSHTTPRequester+Cache.h"
 
-#import "NSDictionary+NSDictionary_File.h"
 #import "NSObject+NSObject_Xpath.h"
 #import "NSString+NSString_Tool.h"
 #import "NSObject+NSObject_File.h"
