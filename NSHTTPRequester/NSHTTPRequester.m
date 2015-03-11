@@ -1,6 +1,6 @@
 //
-//  NCSRequester.m
-//  Cafhub
+//  NSHTTPRequester
+//  NS-Networking
 //
 //  Created by Guillaume on 27/06/14.
 //  Copyright (c) 2014 Netco Sports. All rights reserved.

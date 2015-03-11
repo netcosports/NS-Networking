@@ -43,11 +43,13 @@
     [request addValue:@"image/*" forHTTPHeaderField:@"Accept"];
     
     __weak UIImageView *weak_self = self;
-    [self setImageWithURLRequest:request placeholderImage:placeholderImage success:^(NSURLRequest *request, NSHTTPURLResponse *response, UIImage *image){
+    [self setImageWithURLRequest:request placeholderImage:placeholderImage success:^(NSURLRequest *request, NSHTTPURLResponse *response, UIImage *image)
+    {
         weak_self.image = image;
         if (success)
             success(request, response, image);
-    } failure:^(NSURLRequest *request, NSHTTPURLResponse *response, NSError *error) {
+    } failure:^(NSURLRequest *request, NSHTTPURLResponse *response, NSError *error)
+    {
         if (failure)
             failure(request, response, error);
     }];
