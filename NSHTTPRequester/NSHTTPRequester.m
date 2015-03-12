@@ -172,16 +172,39 @@
 }
 
 #pragma mark - HTTP Methods
-+(void)GET:(NSString *)url usingCacheTTL:(NSInteger)cacheTTL andCompletionBlock:(void(^)(NSDictionary *response, NSInteger httpCode, AFHTTPRequestOperation *requestOperation, NSError *error, BOOL isCached))completion
+#pragma mark GET
++(void)GET:(NSString *)url usingCacheTTL:(NSInteger)cacheTTL requestSerializer:(id<AFURLRequestSerialization>)customRequestSerializer responseSerializer:(id<AFURLResponseSerialization>)customResponseSerializer andCompletionBlock:(void(^)(NSDictionary *response, NSInteger httpCode, AFHTTPRequestOperation *requestOperation, NSError *error, BOOL isCached))completion
 {
     NSHTTPRequester *sharedRequester = [NSHTTPRequester sharedRequester];
-    [sharedRequester createAfNetworkingOperationWithUrl:url httpRequestType:eNSHttpRequestGET jsonRequest:YES parameters:nil usingCacheTTL:cacheTTL andCallBack:completion];
+    [sharedRequester createAfNetworkingOperationWithUrl:url httpRequestType:eNSHttpRequestGET requestSerializer:customRequestSerializer responseSerializer:customResponseSerializer parameters:nil usingCacheTTL:cacheTTL andCompletionBlock:completion];
+}
+
++(void)GET:(NSString *)url usingCacheTTL:(NSInteger)cacheTTL andCompletionBlock:(void(^)(NSDictionary *response, NSInteger httpCode, AFHTTPRequestOperation *requestOperation, NSError *error, BOOL isCached))completion
+{
+    [NSHTTPRequester GET:url usingCacheTTL:cacheTTL requestSerializer:[AFJSONRequestSerializer serializer] responseSerializer:[AFJSONResponseSerializer serializer] andCompletionBlock:completion];
+}
+
+#pragma mark POST
++(void)POST:(NSString *)url withParameters:(id)params requestSerializer:(id<AFURLRequestSerialization>)customRequestSerializer responseSerializer:(id<AFURLResponseSerialization>)customResponseSerializer andCompletionBlock:(void(^)(NSDictionary *response, NSInteger httpCode, AFHTTPRequestOperation *requestOperation, NSError *error))completion
+{
+    NSHTTPRequester *sharedRequester = [NSHTTPRequester sharedRequester];
+    [sharedRequester createAfNetworkingOperationWithUrl:url httpRequestType:eNSHttpRequestPOST requestSerializer:customRequestSerializer responseSerializer:customResponseSerializer parameters:params usingCacheTTL:0 andCompletionBlock:^(NSDictionary *response, NSInteger httpCode, AFHTTPRequestOperation *requestOperation, NSError *error, BOOL isCached)
+    {
+        if (completion)
+            completion(response, httpCode, requestOperation, error);
+    }];
 }
 
 +(void)POST:(NSString *)url withParameters:(id)params andCompletionBlock:(void(^)(NSDictionary *response, NSInteger httpCode, AFHTTPRequestOperation *requestOperation, NSError *error))completion
 {
+    [NSHTTPRequester POST:url withParameters:params requestSerializer:[AFJSONRequestSerializer serializer] responseSerializer:[AFJSONResponseSerializer serializer] andCompletionBlock:completion];
+}
+
+#pragma mark PUT
++(void)PUT:(NSString *)url withParameters:(id)params requestSerializer:(id<AFURLRequestSerialization>)customRequestSerializer responseSerializer:(id<AFURLResponseSerialization>)customResponseSerializer andCompletionBlock:(void(^)(NSDictionary *response, NSInteger httpCode, AFHTTPRequestOperation *requestOperation, NSError *error))completion
+{
     NSHTTPRequester *sharedRequester = [NSHTTPRequester sharedRequester];
-    [sharedRequester createAfNetworkingOperationWithUrl:url httpRequestType:eNSHttpRequestPOST jsonRequest:YES parameters:params usingCacheTTL:0 andCallBack:^(NSDictionary *response, NSInteger httpCode, AFHTTPRequestOperation *requestOperation, NSError *error, BOOL isCached)
+    [sharedRequester createAfNetworkingOperationWithUrl:url httpRequestType:eNSHttpRequestPUT requestSerializer:customRequestSerializer responseSerializer:customResponseSerializer parameters:params usingCacheTTL:0 andCompletionBlock:^(NSDictionary *response, NSInteger httpCode, AFHTTPRequestOperation *requestOperation, NSError *error, BOOL isCached)
      {
          if (completion)
              completion(response, httpCode, requestOperation, error);
@@ -190,8 +213,14 @@
 
 +(void)PUT:(NSString *)url withParameters:(id)params andCompletionBlock:(void(^)(NSDictionary *response, NSInteger httpCode, AFHTTPRequestOperation *requestOperation, NSError *error))completion
 {
+    [NSHTTPRequester PUT:url withParameters:params requestSerializer:[AFJSONRequestSerializer serializer] responseSerializer:[AFJSONResponseSerializer serializer] andCompletionBlock:completion];
+}
+
+#pragma mark DELETE
++(void)DELETE:(NSString *)url withParameters:(id)params requestSerializer:(id<AFURLRequestSerialization>)customRequestSerializer responseSerializer:(id<AFURLResponseSerialization>)customResponseSerializer andCompletionBlock:(void(^)(NSDictionary *response, NSInteger httpCode, AFHTTPRequestOperation *requestOperation, NSError *error))completion
+{
     NSHTTPRequester *sharedRequester = [NSHTTPRequester sharedRequester];
-    [sharedRequester createAfNetworkingOperationWithUrl:url httpRequestType:eNSHttpRequestPUT jsonRequest:YES parameters:params usingCacheTTL:0 andCallBack:^(NSDictionary *response, NSInteger httpCode, AFHTTPRequestOperation *requestOperation, NSError *error, BOOL isCached)
+    [sharedRequester createAfNetworkingOperationWithUrl:url httpRequestType:eNSHttpRequestDELETE requestSerializer:customRequestSerializer responseSerializer:customResponseSerializer parameters:params usingCacheTTL:0 andCompletionBlock:^(NSDictionary *response, NSInteger httpCode, AFHTTPRequestOperation *requestOperation, NSError *error, BOOL isCached)
      {
          if (completion)
              completion(response, httpCode, requestOperation, error);
@@ -200,18 +229,14 @@
 
 +(void)DELETE:(NSString *)url withParameters:(id)params andCompletionBlock:(void(^)(NSDictionary *response, NSInteger httpCode, AFHTTPRequestOperation *requestOperation, NSError *error))completion
 {
-    NSHTTPRequester *sharedRequester = [NSHTTPRequester sharedRequester];
-    [sharedRequester createAfNetworkingOperationWithUrl:url httpRequestType:eNSHttpRequestDELETE jsonRequest:YES parameters:params usingCacheTTL:0 andCallBack:^(NSDictionary *response, NSInteger httpCode, AFHTTPRequestOperation *requestOperation, NSError *error, BOOL isCached)
-    {
-        if (completion)
-            completion(response, httpCode, requestOperation, error);
-    }];
+    [NSHTTPRequester DELETE:url withParameters:params requestSerializer:[AFJSONRequestSerializer serializer] responseSerializer:[AFJSONResponseSerializer serializer] andCompletionBlock:completion];
 }
 
-+(void)UPLOAD:(NSString *)url withParameters:(id)params sendingBlock:(void(^)(long long totalBytesWritten, long long totalBytesExpectedToWrite, double percentageUploaded))sending andCompletionBlock:(void(^)(NSDictionary *response, NSInteger httpCode, AFHTTPRequestOperation *requestOperation, NSError *error))completion
+#pragma mark UPLOAD
++(void)UPLOAD:(NSString *)url withParameters:(id)params requestSerializer:(AFHTTPRequestSerializer *)customRequestSerializer responseSerializer:(id<AFURLResponseSerialization>)customResponseSerializer sendingBlock:(void(^)(long long totalBytesWritten, long long totalBytesExpectedToWrite, double percentageUploaded))sending andCompletionBlock:(void(^)(NSDictionary *response, NSInteger httpCode, AFHTTPRequestOperation *requestOperation, NSError *error))completion
 {
     NSHTTPRequester *sharedRequester = [NSHTTPRequester sharedRequester];
-    AFHTTPRequestOperation *requestOperation = [sharedRequester createAfNetworkingOperationWithUrl:url httpRequestType:eNSHttpRequestUPLOAD jsonRequest:NO parameters:params usingCacheTTL:0 andCallBack:^(NSDictionary *response, NSInteger httpCode, AFHTTPRequestOperation *requestOperation, NSError *error, BOOL isCached)
+    AFHTTPRequestOperation *requestOperation = [sharedRequester createAfNetworkingOperationWithUrl:url httpRequestType:eNSHttpRequestUPLOAD requestSerializer:customRequestSerializer responseSerializer:customResponseSerializer parameters:params usingCacheTTL:0 andCompletionBlock:^(NSDictionary *response, NSInteger httpCode, AFHTTPRequestOperation *requestOperation, NSError *error, BOOL isCached)
     {
         if (completion)
             completion(response, httpCode, requestOperation, error);
@@ -225,35 +250,65 @@
     }];
 }
 
++(void)UPLOAD:(NSString *)url withParameters:(id)params sendingBlock:(void(^)(long long totalBytesWritten, long long totalBytesExpectedToWrite, double percentageUploaded))sending andCompletionBlock:(void(^)(NSDictionary *response, NSInteger httpCode, AFHTTPRequestOperation *requestOperation, NSError *error))completion
+{
+    [NSHTTPRequester UPLOAD:url withParameters:params requestSerializer:[AFHTTPRequestSerializer serializer] responseSerializer:[AFJSONResponseSerializer serializer] sendingBlock:sending andCompletionBlock:completion];
+}
+
 #pragma mark - Private Creation of Operation
 -(AFHTTPRequestOperation *)createAfNetworkingOperationWithUrl:(NSString *)url
                           httpRequestType:(eNSHttpRequestType)httpRequestType
-                              jsonRequest:(BOOL)requestShouldBeJson
+                              requestSerializer:(AFHTTPRequestSerializer *)requestSerializer
+                              responseSerializer:(AFHTTPResponseSerializer *)responseSerializer
                                parameters:(id)parameters
                                usingCacheTTL:(NSInteger)cacheTTL
-                              andCallBack:(void(^)(NSDictionary *response, NSInteger httpCode, AFHTTPRequestOperation *requestOperation, NSError *error, BOOL isCached))cb_rep
+                              andCompletionBlock:(void(^)(NSDictionary *response, NSInteger httpCode, AFHTTPRequestOperation *requestOperation, NSError *error, BOOL isCached))completion
 {
     [self printUrl:url forRequestType:httpRequestType];
     
     // CLIENT CACHE
     if (cacheTTL > 0 && httpRequestType == eNSHttpRequestGET)
     {
-        NSDictionary *localCachedResponse = [NSHTTPRequester getCacheValueForUrl:url andTTL:cacheTTL];
-        [NSObject mainThreadBlock:^{
-            if (cb_rep && localCachedResponse)
-                cb_rep(localCachedResponse, 0, nil, nil, YES);
+        [NSObject backGroundBlock:^{
+            NSDictionary *localCachedResponse = [NSHTTPRequester getCacheValueForUrl:url andTTL:cacheTTL];
+            [NSObject mainThreadBlock:^{
+                if (completion && localCachedResponse)
+                    completion(localCachedResponse, 0, nil, nil, YES);
+            }];
         }];
 	}
 
     // SERIALIZER TYPE
     __block AFHTTPRequestOperationManager *afNetworkingManager = [AFHTTPRequestOperationManager manager];
-    if (requestShouldBeJson)
-        [afNetworkingManager setRequestSerializer:[AFJSONRequestSerializer serializer]];
+    if (requestSerializer && [requestSerializer conformsToProtocol:@protocol(AFURLRequestSerialization)])
+    {
+        [afNetworkingManager setRequestSerializer:requestSerializer];
+    }
     else
-        [afNetworkingManager setRequestSerializer:[AFHTTPRequestSerializer serializer]];
+    {
+        if (self.verbose)
+            DLog(@"Bad request serializer");
+    }
+    if (responseSerializer && [responseSerializer conformsToProtocol:@protocol(AFURLResponseSerialization)])
+    {
+        [afNetworkingManager setResponseSerializer:responseSerializer];
+    }
+    else
+    {
+        if (self.verbose)
+            DLog(@"Bad response serializer");
+    }
     
-    [afNetworkingManager setResponseSerializer:[AFJSONResponseSerializer serializer]];
+    // COOKIES
+    [afNetworkingManager.requestSerializer setHTTPShouldHandleCookies:self.ishandlingCookies];
     
+    // SERVER CACHE POLICY
+    if (cacheTTL > 0)
+        [afNetworkingManager.requestSerializer setCachePolicy:NSURLRequestUseProtocolCachePolicy];
+    else
+        [afNetworkingManager.requestSerializer setCachePolicy:NSURLRequestReloadIgnoringLocalAndRemoteCacheData];
+
+
     // FORCE RESPONSE SERIALIZER TO ACCEPT CONTENT-TYPE (text/html & text/plain) as well.
     // (thefanclub.com send response with only one content-type : text/html).
     // json mocks usually do not use application/json but text/plain instead.
@@ -262,19 +317,11 @@
     [setOfAcceptablesContentTypesInResonse addObject:@"text/plain"];
     [afNetworkingManager.responseSerializer setAcceptableContentTypes:setOfAcceptablesContentTypesInResonse];
 
-    // COOKIES
-    [afNetworkingManager.requestSerializer setHTTPShouldHandleCookies:self.ishandlingCookies];
-
-    // SERVER CACHE POLICY
-    if (cacheTTL > 0)
-        [afNetworkingManager.requestSerializer setCachePolicy:NSURLRequestUseProtocolCachePolicy];
-    else
-        [afNetworkingManager.requestSerializer setCachePolicy:NSURLRequestReloadIgnoringLocalAndRemoteCacheData];
     
     // NETCO SPORTS SIGNED HTTP HEADER FIELDS
     if (self.NS_CLIENT_ID && self.NS_CLIENT_SECRET && [self.NS_CLIENT_ID length] > 0 && [self.NS_CLIENT_SECRET length] > 0)
     {
-        [[NSHTTPRequester genSignatureHeaders:self.NS_CLIENT_ID clientSecret:self.NS_CLIENT_SECRET forUrl:url params:parameters isJSON:requestShouldBeJson] enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop)
+        [[NSHTTPRequester genSignatureHeaders:self.NS_CLIENT_ID clientSecret:self.NS_CLIENT_SECRET forUrl:url params:parameters isJSON:[requestSerializer isMemberOfClass:[AFJSONRequestSerializer class]]] enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop)
         {
             if (obj && [obj isKindOfClass:[NSDictionary class]])
             {
@@ -309,19 +356,19 @@
         if (httpRequestType == eNSHttpRequestGET)
             [NSHTTPRequester cacheValue:responseObject forUrl:url]; // Store a Cached version of the response every time it's called.
         
-        if (cb_rep)
+        if (completion)
         {
             [NSObject mainThreadBlock:^{
-                cb_rep(responseObject, [operation.response statusCode], operation, nil, NO);
+                completion(responseObject, [operation.response statusCode], operation, nil, NO);
             }];
         }
     };
     void (^failureCompletionBlock)(AFHTTPRequestOperation *operation, NSError *error) = ^(AFHTTPRequestOperation *operation, NSError *error)
     {
-        if (cb_rep)
+        if (completion)
         {
             [NSObject mainThreadBlock:^{
-                cb_rep(operation.responseObject, [operation.response statusCode], operation, error, NO);
+                completion(operation.responseObject, [operation.response statusCode], operation, error, NO);
             }];
         }
     };
