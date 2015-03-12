@@ -1,6 +1,6 @@
 //
 //  NSHTTPRequester+Cache.h
-//  FoxSports
+//  NS-Networking
 //
 //  Created by Guillaume on 03/03/15.
 //  Copyright (c) 2015 Netco Sports. All rights reserved.
@@ -18,7 +18,7 @@
  *
  *  @return The cached reponse
  */
-+(id)getCacheValueForUrl:(NSString *)url andTTL:(NSInteger)ttlFile;
++(id)getCacheValueForUrl:(NSString *)url andTTL:(NSUInteger)ttlFile;
 
 /**
  *  Local client-side caching mechanism [Remove]

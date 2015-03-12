@@ -1,6 +1,6 @@
 //
-//  NCSRequester.m
-//  Cafhub
+//  NSHTTPRequester
+//  NS-Networking
 //
 //  Created by Guillaume on 27/06/14.
 //  Copyright (c) 2014 Netco Sports. All rights reserved.
@@ -12,7 +12,6 @@
 #import "NSHTTPRequester+Properties.h"
 #import "NSHTTPRequester+Cache.h"
 
-#import "NSDictionary+NSDictionary_File.h"
 #import "NSObject+NSObject_Xpath.h"
 #import "NSString+NSString_Tool.h"
 #import "NSObject+NSObject_File.h"
