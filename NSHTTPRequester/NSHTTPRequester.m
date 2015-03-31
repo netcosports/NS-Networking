@@ -119,7 +119,7 @@
         return jsonString;
     }
     
-    jsonString = [jsonString strReplace:@"\n" to:@""];
+    jsonString = [jsonString strReplace:@"\n" by:@""];
 
     __block NSMutableIndexSet *indexSetOfCharacterToremove = [[NSMutableIndexSet alloc] init];
     __block NSInteger numberOfParsedQuotes = 0;
