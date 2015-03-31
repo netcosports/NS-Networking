@@ -10,16 +10,6 @@
 #import "AFHTTPSessionManager.h"
 #import "AFHTTPRequestOperationManager.h"
 
-typedef enum
-{
-    eNSHttpRequestGET,
-    eNSHttpRequestPOST,
-    eNSHttpRequestPUT,
-    eNSHttpRequestDELETE,
-    eNSHttpRequestUPLOAD,
-} eNSHttpRequestType;
-
-
 @interface NSHTTPRequester : NSObject
 
 /**
@@ -58,7 +48,9 @@ typedef enum
  *  HTTP Methods [GET, POST, PUT, DELETE] & Custom UPLOAD using multipart POST
  *  Default request serializer: AFJSONRequestSerializer
  *  Default response serializer: AFJSONResponseSerializer
+ *
  *  NB: Since UPLOAD is using the multipart post, the default request serializer for it is AFHTTPRequestSerializer.
+ *  NB2: Same methods with custom request && response serializers exist (cf. NSHTTPRequester+Serializer)
  *
  *  @param url            Entire URL (e.g http://ip.jsontest.com)
  *  @param usingCacheTTL  Defines if the requester should return local client-side cache or not, reguarding the ttl.
@@ -74,20 +66,6 @@ typedef enum
 +(void)DELETE:(NSString *)url withParameters:(id)params andCompletionBlock:(void(^)(NSDictionary *response, NSInteger httpCode, AFHTTPRequestOperation *requestOperation, NSError *error))completion;
 
 +(void)UPLOAD:(NSString *)url withParameters:(id)params sendingBlock:(void(^)(long long totalBytesWritten, long long totalBytesExpectedToWrite, double percentageUploaded))sending andCompletionBlock:(void(^)(NSDictionary *response, NSInteger httpCode, AFHTTPRequestOperation *requestOperation, NSError *error))completion;
-
-
-/**
- *  Same as previous but you can pass customs request & response serializers.
-*/
-+(void)GET:(NSString *)url usingCacheTTL:(NSInteger)cacheTTL requestSerializer:(id<AFURLRequestSerialization>)customRequestSerializer responseSerializer:(id<AFURLResponseSerialization>)customResponseSerializer andCompletionBlock:(void(^)(NSDictionary *response, NSInteger httpCode, AFHTTPRequestOperation *requestOperation, NSError *error, BOOL isCached))completion;
-
-+(void)POST:(NSString *)url withParameters:(id)params requestSerializer:(id<AFURLRequestSerialization>)customRequestSerializer responseSerializer:(id<AFURLResponseSerialization>)customResponseSerializer andCompletionBlock:(void(^)(NSDictionary *response, NSInteger httpCode, AFHTTPRequestOperation *requestOperation, NSError *error))completion;
-
-+(void)PUT:(NSString *)url withParameters:(id)params requestSerializer:(id<AFURLRequestSerialization>)customRequestSerializer responseSerializer:(id<AFURLResponseSerialization>)customResponseSerializer andCompletionBlock:(void(^)(NSDictionary *response, NSInteger httpCode, AFHTTPRequestOperation *requestOperation, NSError *error))completion;
-
-+(void)DELETE:(NSString *)url withParameters:(id)params requestSerializer:(id<AFURLRequestSerialization>)customRequestSerializer responseSerializer:(id<AFURLResponseSerialization>)customResponseSerializer andCompletionBlock:(void(^)(NSDictionary *response, NSInteger httpCode, AFHTTPRequestOperation *requestOperation, NSError *error))completion;
-
-+(void)UPLOAD:(NSString *)url withParameters:(id)params requestSerializer:(AFHTTPRequestSerializer *)customRequestSerializer responseSerializer:(id<AFURLResponseSerialization>)customResponseSerializer sendingBlock:(void(^)(long long totalBytesWritten, long long totalBytesExpectedToWrite, double percentageUploaded))sending andCompletionBlock:(void(^)(NSDictionary *response, NSInteger httpCode, AFHTTPRequestOperation *requestOperation, NSError *error))completion;
 
 
 /**
