@@ -49,7 +49,7 @@
  *  Default request serializer: AFJSONRequestSerializer
  *  Default response serializer: AFJSONResponseSerializer
  *
- *  NB: Since UPLOAD is using the multipart post, the default request serializer for it is AFHTTPRequestSerializer.
+ *  NB: Since UPLOAD is using the multipart post, the default request serializer for it is AFHTTPRequestSerializer. Params for uploads are {`image', `mimetype', `filename'}
  *  NB2: Same methods with custom request && response serializers exist (cf. NSHTTPRequester+Serializer)
  *
  *  @param url            Entire URL (e.g http://ip.jsontest.com)
@@ -65,8 +65,9 @@
 
 +(void)DELETE:(NSString *)url withParameters:(id)params andCompletionBlock:(void(^)(NSDictionary *response, NSInteger httpCode, AFHTTPRequestOperation *requestOperation, NSError *error))completion;
 
-+(void)UPLOAD:(NSString *)url withParameters:(id)params sendingBlock:(void(^)(long long totalBytesWritten, long long totalBytesExpectedToWrite, double percentageUploaded))sending andCompletionBlock:(void(^)(NSDictionary *response, NSInteger httpCode, AFHTTPRequestOperation *requestOperation, NSError *error))completion;
++(void)UPLOADmp:(NSString *)url withParameters:(id)params sendingBlock:(void(^)(long long totalBytesWritten, long long totalBytesExpectedToWrite, double percentageUploaded))sending andCompletionBlock:(void(^)(NSDictionary *response, NSInteger httpCode, AFHTTPRequestOperation *requestOperation, NSError *error))completion;
 
++(void)DOWNLOAD:(NSString *)url downloadingBlock:(void(^)(long long totalBytesWritten, long long totalBytesExpectedToWrite, double percentageUploaded))downloading andCompletionBlock:(void(^)(NSDictionary *response, NSInteger httpCode, AFHTTPRequestOperation *requestOperation, NSError *error))completion;
 
 /**
  *  Netco Sports URLs Signature Generation

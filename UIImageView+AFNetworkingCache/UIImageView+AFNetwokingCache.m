@@ -37,7 +37,7 @@
             return;
         }
     }
-    
+
     NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:[NSURL URLWithString:[urlString stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding]]];
     [request setTimeoutInterval:timeInterval];
     [request addValue:@"image/*" forHTTPHeaderField:@"Accept"];

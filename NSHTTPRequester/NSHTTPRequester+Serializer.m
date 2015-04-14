@@ -53,7 +53,7 @@
 }
 
 #pragma mark UPLOAD
-+(void)UPLOAD:(NSString *)url withParameters:(id)params requestSerializer:(AFHTTPRequestSerializer *)customRequestSerializer responseSerializer:(id<AFURLResponseSerialization>)customResponseSerializer sendingBlock:(void(^)(long long totalBytesWritten, long long totalBytesExpectedToWrite, double percentageUploaded))sending andCompletionBlock:(void(^)(NSDictionary *response, NSInteger httpCode, AFHTTPRequestOperation *requestOperation, NSError *error))completion
++(void)UPLOADmp:(NSString *)url withParameters:(id)params requestSerializer:(AFHTTPRequestSerializer *)customRequestSerializer responseSerializer:(id<AFURLResponseSerialization>)customResponseSerializer sendingBlock:(void(^)(long long totalBytesWritten, long long totalBytesExpectedToWrite, double percentageUploaded))sending andCompletionBlock:(void(^)(NSDictionary *response, NSInteger httpCode, AFHTTPRequestOperation *requestOperation, NSError *error))completion
 {
     NSHTTPRequester *sharedRequester = [NSHTTPRequester sharedRequester];
     AFHTTPRequestOperation *requestOperation = [sharedRequester createAfNetworkingOperationWithUrl:url httpRequestType:eNSHttpRequestUPLOAD requestSerializer:customRequestSerializer responseSerializer:customResponseSerializer parameters:params usingCacheTTL:0 andCompletionBlock:^(NSDictionary *response, NSInteger httpCode, AFHTTPRequestOperation *requestOperation, NSError *error, BOOL isCached)
@@ -70,4 +70,20 @@
      }];
 }
 
++(void)DOWNLOAD:(NSString *)url requestSerializer:(AFHTTPRequestSerializer *)customRequestSerializer responseSerializer:(id<AFURLResponseSerialization>)customResponseSerializer downloadingBlock:(void(^)(long long totalBytesRead, long long totalBytesExpectedToRead, double percentageDownloaded))downloading andCompletionBlock:(void(^)(NSDictionary *response, NSInteger httpCode, AFHTTPRequestOperation *requestOperation, NSError *error))completion
+{
+    NSHTTPRequester *sharedRequester = [NSHTTPRequester sharedRequester];
+    AFHTTPRequestOperation *requestOperation = [sharedRequester createAfNetworkingOperationWithUrl:url httpRequestType:eNSHttpRequestDOWNLOAD requestSerializer:customRequestSerializer responseSerializer:customResponseSerializer parameters:nil usingCacheTTL:0 andCompletionBlock:^(NSDictionary *response, NSInteger httpCode, AFHTTPRequestOperation *requestOperation, NSError *error, BOOL isCached)
+                                                {
+                                                    if (completion)
+                                                        completion(response, httpCode, requestOperation, error);
+                                                }];
+    
+    [requestOperation setDownloadProgressBlock:^(NSUInteger bytesRead, long long totalBytesRead, long long totalBytesExpectedToRead)
+    {
+         double percentDone = ((double)totalBytesRead / (double)totalBytesExpectedToRead) * 100;
+        if (downloading)
+            downloading(totalBytesRead, totalBytesExpectedToRead, percentDone);
+    }];
+}
 @end

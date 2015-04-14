@@ -16,6 +16,7 @@ typedef enum
     eNSHttpRequestPUT,
     eNSHttpRequestDELETE,
     eNSHttpRequestUPLOAD,
+    eNSHttpRequestDOWNLOAD,
 } eNSHttpRequestType;
 
 @interface NSHTTPRequester ()

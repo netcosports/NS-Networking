@@ -199,9 +199,15 @@
 }
 
 #pragma mark UPLOAD
-+(void)UPLOAD:(NSString *)url withParameters:(id)params sendingBlock:(void(^)(long long totalBytesWritten, long long totalBytesExpectedToWrite, double percentageUploaded))sending andCompletionBlock:(void(^)(NSDictionary *response, NSInteger httpCode, AFHTTPRequestOperation *requestOperation, NSError *error))completion
++(void)UPLOADmp:(NSString *)url withParameters:(id)params sendingBlock:(void(^)(long long totalBytesWritten, long long totalBytesExpectedToWrite, double percentageUploaded))sending andCompletionBlock:(void(^)(NSDictionary *response, NSInteger httpCode, AFHTTPRequestOperation *requestOperation, NSError *error))completion
 {
-    [NSHTTPRequester UPLOAD:url withParameters:params requestSerializer:[AFHTTPRequestSerializer serializer] responseSerializer:[AFJSONResponseSerializer serializer] sendingBlock:sending andCompletionBlock:completion];
+    [NSHTTPRequester UPLOADmp:url withParameters:params requestSerializer:[AFHTTPRequestSerializer serializer] responseSerializer:[AFJSONResponseSerializer serializer] sendingBlock:sending andCompletionBlock:completion];
+}
+
+#pragma mark DOWNLOAD
++(void)DOWNLOAD:(NSString *)url downloadingBlock:(void(^)(long long totalBytesWritten, long long totalBytesExpectedToWrite, double percentageUploaded))downloading andCompletionBlock:(void(^)(NSDictionary *response, NSInteger httpCode, AFHTTPRequestOperation *requestOperation, NSError *error))completion
+{
+    [NSHTTPRequester DOWNLOAD:url requestSerializer:[AFHTTPRequestSerializer serializer] responseSerializer:[AFImageResponseSerializer serializer] downloadingBlock:downloading andCompletionBlock:completion];
 }
 
 #pragma mark - Private Creation of Operation
@@ -348,7 +354,7 @@
                 UIImage *imageToUpload = [parameters getXpathNil:@"image" type:[UIImage class]];
                 NSString *mimeType = [parameters getXpathNilString:@"mimetype"];
                 NSString *fileName = [parameters getXpathNilString:@"filename"];
-                
+
                 if (imageToUpload)
                 {
                     NSData *imageData = UIImageJPEGRepresentation(imageToUpload, 0.5);
@@ -363,8 +369,14 @@
                     [formData appendPartWithFileData:imageData name:@"file" fileName:impliedFileName mimeType:mimeType];
                 }
             } success:successCompletionBlock failure:failureCompletionBlock];
-        } break;
-            
+            break;
+        }
+        case eNSHttpRequestDOWNLOAD:
+        {
+            afNetworkingOperation = [afNetworkingManager HTTPRequestOperationWithRequest:[NSURLRequest requestWithURL:[NSURL URLWithString:url]] success:successCompletionBlock failure:failureCompletionBlock];
+            [afNetworkingOperation start];
+            break;
+        }
         default:
             afNetworkingOperation = [afNetworkingManager GET:url parameters:nil success:successCompletionBlock failure:failureCompletionBlock];
             break;
@@ -398,6 +410,8 @@
         httpMethod = @"DELETE";
     else if (requestType == eNSHttpRequestUPLOAD)
         httpMethod = @"UPLOAD (multipart POST)";
+    else if (requestType == eNSHttpRequestDOWNLOAD)
+        httpMethod = @"DOWNLOAD";
     else
         httpMethod = @"";
     
