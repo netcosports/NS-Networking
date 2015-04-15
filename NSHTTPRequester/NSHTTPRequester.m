@@ -224,9 +224,9 @@
     // CLIENT CACHE
     if (cacheTTL > 0 && httpRequestType == eNSHttpRequestGET)
     {
-        [NSObject backGroundBlock:^{
+        [NSObject backgroundQueueBlock:^{
             NSDictionary *localCachedResponse = [NSHTTPRequester getCacheValueForUrl:url andTTL:cacheTTL];
-            [NSObject mainThreadBlock:^{
+            [NSObject mainQueueBlock:^{
                 if (completion && localCachedResponse)
                     completion(localCachedResponse, 0, nil, nil, YES);
             }];
@@ -313,21 +313,22 @@
         
         if (completion)
         {
-            [NSObject mainThreadBlock:^{
+//            [NSObject mainQueueBlock:^{
                 completion(responseObject, [operation.response statusCode], operation, nil, NO);
-            }];
+//            }];
         }
     };
     void (^failureCompletionBlock)(AFHTTPRequestOperation *operation, NSError *error) = ^(AFHTTPRequestOperation *operation, NSError *error)
     {
         if (completion)
         {
-            [NSObject mainThreadBlock:^{
+//            [NSObject mainQueueBlock:^{
                 completion(operation.responseObject, [operation.response statusCode], operation, error, NO);
-            }];
+//            }];
         }
     };
 
+    // OPERATIONMANAGER LAUNCHING OPERATION
     AFHTTPRequestOperation *afNetworkingOperation = nil;
     switch (httpRequestType)
     {
@@ -381,7 +382,11 @@
             afNetworkingOperation = [afNetworkingManager GET:url parameters:nil success:successCompletionBlock failure:failureCompletionBlock];
             break;
     }
+    
+    // QUEUE MANAGEMENT
+//    afNetworkingOperation.completionQueue = [NSObject isMainThread] ? nil : []
 
+    // CACHE BLOCK
     if (afNetworkingOperation)
     {
         [afNetworkingOperation setCacheResponseBlock:^NSCachedURLResponse *(NSURLConnection *connection, NSCachedURLResponse *cachedResponse)
