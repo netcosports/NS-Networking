@@ -384,7 +384,7 @@
     }
     
     // QUEUE MANAGEMENT
-//    afNetworkingOperation.completionQueue = [NSObject isMainThread] ? nil : []
+    afNetworkingOperation.completionQueue = [NSObject isMainQueue] ? nil : [NSObject backgroundQueueBlock:nil];
 
     // CACHE BLOCK
     if (afNetworkingOperation)
