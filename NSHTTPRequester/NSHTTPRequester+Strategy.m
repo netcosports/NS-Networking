@@ -15,9 +15,10 @@
 +(void)strategicGET:(NSString *)url usingCacheTTL:(NSInteger)cacheTTL
 requestSerializer:(id<AFURLRequestSerialization>)customRequestSerializer
 responseSerializer:(id<AFURLResponseSerialization>)customResponseSerializer
+strategicBlockReachableAndCache:(void(^)(NSDictionary *response, NSInteger httpCode, AFHTTPRequestOperation *requestOperation, NSError *error, BOOL isCached))strategicBlocReachCachedData
 strategicBlockReachableAndNoCache:(void(^)(NSDictionary *response, NSInteger httpCode, AFHTTPRequestOperation *requestOperation, NSError *error, BOOL isCached))strategicBlocDataUpdated
 strategicBlockNotReachableAndNoCache:(void(^)(NSDictionary *response, NSInteger httpCode, AFHTTPRequestOperation *requestOperation, NSError *error, BOOL isCached))strategicBlocNoDataEver
-andStrategicBlockNotReachableAndCache:(void(^)(NSDictionary *response, NSInteger httpCode, AFHTTPRequestOperation *requestOperation, NSError *error, BOOL isCached))strategicBlocCacheData
+andStrategicBlockNotReachableAndCache:(void(^)(NSDictionary *response, NSInteger httpCode, AFHTTPRequestOperation *requestOperation, NSError *error, BOOL isCached))strategicBlocNotReachCachedData
 {
     [[AFNetworkReachabilityManager sharedManager] startMonitoring];
     
@@ -25,14 +26,15 @@ andStrategicBlockNotReachableAndCache:(void(^)(NSDictionary *response, NSInteger
     {
         if ([AFNetworkReachabilityManager sharedManager].isReachable == YES && isCached == YES)
         {
-            // Nothing to do, waiting for remote data. No block should be called.
+            if (strategicBlocReachCachedData)
+                strategicBlocReachCachedData(response, httpCode, requestOperation, error, isCached);
         }
         else if ([AFNetworkReachabilityManager sharedManager].isReachable == NO && isCached == YES)
         {
             [[AFNetworkReachabilityManager sharedManager] stopMonitoring];
             
-            if (strategicBlocCacheData)
-                strategicBlocCacheData(response, httpCode, requestOperation, error, isCached);
+            if (strategicBlocNotReachCachedData)
+                strategicBlocNotReachCachedData(response, httpCode, requestOperation, error, isCached);
         }
         else if ([AFNetworkReachabilityManager sharedManager].isReachable == NO && isCached == NO) // Cache exists in that case ?
         {
@@ -70,6 +72,7 @@ andStrategicBlockNotReachableAndCache:(void(^)(NSDictionary *response, NSInteger
 }
 
 +(void)stategicGET:(NSString *)url usingCacheTTL:(NSInteger)cacheTTL
+strategicBlockReachableAndCache:(void(^)(NSDictionary *response, NSInteger httpCode, AFHTTPRequestOperation *requestOperation, NSError *error, BOOL isCached))strategicBlocReachCachedData
 strategicBlockReachableAndNoCache:(void(^)(NSDictionary *response, NSInteger httpCode, AFHTTPRequestOperation *requestOperation, NSError *error, BOOL isCached))strategicBlocDataUpdated
 strategicBlockNotReachableAndNoCache:(void(^)(NSDictionary *response, NSInteger httpCode, AFHTTPRequestOperation *requestOperation, NSError *error, BOOL isCached))strategicBlocNoDataEver
 andStrategicBlockNotReachableAndCache:(void(^)(NSDictionary *response, NSInteger httpCode, AFHTTPRequestOperation *requestOperation, NSError *error, BOOL isCached))strategicBlocCacheData
@@ -78,6 +81,7 @@ andStrategicBlockNotReachableAndCache:(void(^)(NSDictionary *response, NSInteger
                                 usingCacheTTL:cacheTTL
                             requestSerializer:[AFJSONRequestSerializer serializer]
                            responseSerializer:[AFJSONResponseSerializer serializer]
+              strategicBlockReachableAndCache:strategicBlocReachCachedData
             strategicBlockReachableAndNoCache:strategicBlocDataUpdated
          strategicBlockNotReachableAndNoCache:strategicBlocNoDataEver
         andStrategicBlockNotReachableAndCache:strategicBlocCacheData];
