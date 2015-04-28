@@ -10,13 +10,13 @@
 
 @interface UIImageView (AFNetworkingRequest)
 
+#pragma mark - Image downloads
 /**
  * Asynchronously downloads an image from the specified url based on the existing (UIImageView+AFNetworking) category.
  * The differences here are the specifc timeout that can be passed to the download request & the urlString can also 
  * describe a local image file embbeded in the main bundle of the application.
  *
  */
-#pragma mark - Image downloads
 - (void)setImageWithURLString:(NSString *)urlString
               timeoutInterval:(NSTimeInterval)timeInterval
              placeholderImage:(UIImage *)placeholderImage
@@ -32,13 +32,13 @@
               timeoutInterval:(NSTimeInterval)timeInterval
              placeholderImage:(UIImage *)placeholderImage;
 
+#pragma mark - Image cache
 /**
  * Returns a cached image for the specififed url, if available.
  * It uses the sharedImageCache (<AFImageCache>) of the existing (UIImageView+AFNetworking) category.
  * Here the url as a string can be used insted of a NSURLRequest.
  *
  */
-#pragma mark - Image cache
 + (UIImage *)cachedImageForUrl:(NSString *)url;
 
 /**
