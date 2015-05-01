@@ -71,7 +71,7 @@ andStrategicBlockNotReachableAndCache:(void(^)(NSDictionary *response, NSInteger
     }];
 }
 
-+(void)stategicGET:(NSString *)url usingCacheTTL:(NSInteger)cacheTTL
++(void)strategicGET:(NSString *)url usingCacheTTL:(NSInteger)cacheTTL
 strategicBlockReachableAndCache:(void(^)(NSDictionary *response, NSInteger httpCode, AFHTTPRequestOperation *requestOperation, NSError *error, BOOL isCached))strategicBlocReachCachedData
 strategicBlockReachableAndNoCache:(void(^)(NSDictionary *response, NSInteger httpCode, AFHTTPRequestOperation *requestOperation, NSError *error, BOOL isCached))strategicBlocDataUpdated
 strategicBlockNotReachableAndNoCache:(void(^)(NSDictionary *response, NSInteger httpCode, AFHTTPRequestOperation *requestOperation, NSError *error, BOOL isCached))strategicBlocNoDataEver
