@@ -224,7 +224,6 @@
     // CLIENT CACHE
     if (cacheTTL > 0 && httpRequestType == eNSHttpRequestGET)
     {
-        __weak NSHTTPRequester *weak_self = self;
         [NSObject backgroundQueueBlock:^{
             NSDictionary *localCachedResponse = [NSHTTPRequester getCacheValueForUrl:url andTTL:cacheTTL];
             [NSObject mainQueueBlock:^{
