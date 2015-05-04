@@ -1,23 +1,17 @@
 //
 //  UIImageView+AFNetwokingCache.m
-//  TVA Sport Framework
+//  UIImageView+AFNetworkingRequest
 //
-//  Created by Jean-François GRANG on 27/06/2014.
+//  Created by Guillaume on 27/04/2015.
 //  Copyright (c) 2014 Netco Sports. All rights reserved.
 //
 
-#import "UIImageView+AFNetwokingCache.h"
+#import "UIImageView+AFNetworkingRequest.h"
 #import "UIImageView+AFNetworking.h"
 
-@implementation UIImageView (AFNetwokingCache)
+@implementation UIImageView (AFNetworkingRequest)
 
-- (void)setImageWithURLString:(NSString *)urlString
-              timeoutInterval:(NSTimeInterval)timeInterval
-             placeholderImage:(UIImage *)placeholderImage
-{
-    [self setImageWithURLString:urlString timeoutInterval:timeInterval placeholderImage:placeholderImage success:nil failure:nil];
-}
-
+#pragma mark - Image downloads
 - (void)setImageWithURLString:(NSString *)urlString
               timeoutInterval:(NSTimeInterval)timeInterval
              placeholderImage:(UIImage *)placeholderImage
@@ -37,7 +31,7 @@
             return;
         }
     }
-    
+
     NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:[NSURL URLWithString:[urlString stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding]]];
     [request setTimeoutInterval:timeInterval];
     [request addValue:@"image/*" forHTTPHeaderField:@"Accept"];
@@ -53,6 +47,24 @@
         if (failure)
             failure(request, response, error);
     }];
+}
+
+- (void)setImageWithURLString:(NSString *)urlString
+              timeoutInterval:(NSTimeInterval)timeInterval
+             placeholderImage:(UIImage *)placeholderImage
+{
+    [self setImageWithURLString:urlString timeoutInterval:timeInterval placeholderImage:placeholderImage success:nil failure:nil];
+}
+
+#pragma mark - Image cache
++ (UIImage *)cachedImageForUrl:(NSString *)url
+{
+    return [[UIImageView sharedImageCache] cachedImageForRequest:[NSURLRequest requestWithURL:[NSURL URLWithString:url]]];
+}
+
++ (UIImageView *)imageViewFromCachedImageForUrl:(NSString *)url
+{
+    return [[UIImageView alloc] initWithImage:[self cachedImageForUrl:url]];
 }
 
 @end
