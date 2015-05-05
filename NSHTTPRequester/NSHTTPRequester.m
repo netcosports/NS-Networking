@@ -383,12 +383,13 @@
             break;
     }
     
-    // QUEUE MANAGEMENT
-    afNetworkingOperation.completionQueue = [NSObject isMainQueue] ? nil : [NSObject backgroundQueueBlock:nil];
-
     // CACHE BLOCK
     if (afNetworkingOperation)
     {
+        // QUEUE MANAGEMENT
+        afNetworkingOperation.completionQueue = [NSObject isMainQueue] ? nil : [NSObject backgroundQueueBlock:nil];
+        
+        // CACHE BLOCK
         [afNetworkingOperation setCacheResponseBlock:^NSCachedURLResponse *(NSURLConnection *connection, NSCachedURLResponse *cachedResponse)
          {
              // Block Called only if : Cache-Control is set into http response header
@@ -397,6 +398,13 @@
              else
                  return nil;
          }];
+
+        // REDIRECTION BLOCK
+        [afNetworkingOperation setRedirectResponseBlock:^NSURLRequest *(NSURLConnection *connection, NSURLRequest *request, NSURLResponse *redirectResponse)
+        {
+            return request;
+        }];
+
     }
     return afNetworkingOperation;
 }
