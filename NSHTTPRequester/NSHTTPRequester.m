@@ -276,7 +276,32 @@
     // NETCO SPORTS SIGNED HTTP HEADER FIELDS
     if (self.NS_CLIENT_ID && self.NS_CLIENT_SECRET && [self.NS_CLIENT_ID length] > 0 && [self.NS_CLIENT_SECRET length] > 0)
     {
-        [[NSHTTPRequester genSignatureHeaders:self.NS_CLIENT_ID clientSecret:self.NS_CLIENT_SECRET forUrl:url params:parameters isJSON:[requestSerializer isMemberOfClass:[AFJSONRequestSerializer class]]] enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop)
+        NSString *urlForSig = url;
+        BOOL isJSONForSig = [requestSerializer isMemberOfClass:[AFJSONRequestSerializer class]];
+        
+        if (httpRequestType == eNSHttpRequestGET)
+        {
+            NSArray *urlTab = [url componentsSeparatedByString:@"?"];
+            if (urlTab && [urlTab count] == 2)
+            {
+                isJSONForSig = NO;
+                urlForSig = urlTab[0];
+                
+                NSMutableDictionary *newParams = [[NSMutableDictionary alloc] init];
+                NSArray *paramTab = [urlTab[1] componentsSeparatedByString:@"&"];
+                for (NSString *keyValue in paramTab)
+                {
+                    NSArray *keyValueTab = [keyValue componentsSeparatedByString:@"="];
+                    if (keyValueTab && [keyValueTab count] == 2)
+                    {
+                        [newParams setObject:keyValueTab[1] forKey:keyValueTab[0]];
+                    }
+                }
+                parameters = [newParams ToUnMutable];
+            }
+        }
+        
+        [[NSHTTPRequester genSignatureHeaders:self.NS_CLIENT_ID clientSecret:self.NS_CLIENT_SECRET forUrl:urlForSig params:parameters isJSON:isJSONForSig] enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop)
         {
             if (obj && [obj isKindOfClass:[NSDictionary class]])
             {
