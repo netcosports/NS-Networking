@@ -58,17 +58,49 @@
                          params:(NSDictionary *)params
                          isJSON:(BOOL)isJSON
 {
+    NSMutableDictionary *parameters = [NSMutableDictionary new];
+    if (params)
+    {
+        [parameters addEntriesFromDictionary:params];
+    }
+    
+    NSString *urlForSig = url;
+//    if (httpRequestType == eNSHttpRequestGET)
+//    {
+        NSArray *urlTab = [url componentsSeparatedByString:@"?"];
+        if (urlTab && [urlTab count] == 2)
+        {
+            urlForSig = urlTab[0];
+            
+            NSMutableDictionary *newParams = [[NSMutableDictionary alloc] init];
+            NSArray *paramTab = [urlTab[1] componentsSeparatedByString:@"&"];
+            for (NSString *keyValue in paramTab)
+            {
+                NSArray *keyValueTab = [keyValue componentsSeparatedByString:@"="];
+                if (keyValueTab && [keyValueTab count] == 2)
+                {
+                    [newParams setObject:keyValueTab[1] forKey:keyValueTab[0]];
+                }
+                else if (keyValueTab && [keyValueTab count] == 1)
+                {
+                    [newParams setObject:@"" forKey:keyValueTab[0]];
+                }
+            }
+            [parameters addEntriesFromDictionary:newParams];
+        }
+//    }
+
     NSMutableString *signature = [[NSMutableString alloc] init];
-    [signature appendString:url];
-    if ([url hasSubstring:@"?"])
+    [signature appendString:urlForSig];
+    if ([urlForSig hasSubstring:@"?"])
         [signature appendString:@"&"];
     else
         [signature appendString:@"?"];
 
-    if (params && isJSON)
-        [signature appendString:[self signJSONParams:params]];
-    else if (params && isJSON == NO)
-        [signature appendString:[self signMultiPartParams:params]];
+    if (parameters && isJSON)
+        [signature appendString:[self signJSONParams:parameters]];
+    else if (parameters && isJSON == NO)
+        [signature appendString:[self createStringFromParams:parameters]];
 
     [signature appendFormat:@"@%@:%@", clientId, [[NSString stringWithFormat:@"netcosports%@", clientSecret] sha1]];
     return @[@{HEADER_X_API_CLIENT_ID: clientId}, @{HEADER_X_API_SIG: [signature sha1]}];
@@ -90,7 +122,8 @@
     }
 }
 
-+ (NSString *)signMultiPartParams:(NSDictionary *)params
+// Params can come from query params or multi-part params.
++ (NSString *)createStringFromParams:(NSDictionary *)params
 {
     NSMutableString *result = [[NSMutableString alloc] init];
     NSArray *sortedKeys = [[params allKeys] sortedArrayUsingComparator:^NSComparisonResult(id obj1, id obj2)
@@ -177,7 +210,7 @@
 #pragma mark GET
 +(void)GET:(NSString *)url usingCacheTTL:(NSInteger)cacheTTL andCompletionBlock:(void(^)(NSDictionary *response, NSInteger httpCode, AFHTTPRequestOperation *requestOperation, NSError *error, BOOL isCached))completion
 {
-    [NSHTTPRequester GET:url usingCacheTTL:cacheTTL requestSerializer:[AFJSONRequestSerializer serializer] responseSerializer:[AFJSONResponseSerializer serializer] andCompletionBlock:completion];
+    [NSHTTPRequester GET:url usingCacheTTL:cacheTTL requestSerializer:[AFHTTPRequestSerializer serializer] responseSerializer:[AFJSONResponseSerializer serializer] andCompletionBlock:completion];
 }
 
 #pragma mark POST
@@ -263,7 +296,6 @@
     else
         [afNetworkingManager.requestSerializer setCachePolicy:NSURLRequestReloadIgnoringLocalAndRemoteCacheData];
 
-
     // FORCE RESPONSE SERIALIZER TO ACCEPT CONTENT-TYPE (text/html & text/plain) as well.
     // (thefanclub.com send response with only one content-type : text/html).
     // json mocks usually do not use application/json but text/plain instead.
@@ -272,36 +304,10 @@
     [setOfAcceptablesContentTypesInResonse addObject:@"text/plain"];
     [afNetworkingManager.responseSerializer setAcceptableContentTypes:setOfAcceptablesContentTypesInResonse];
 
-    
     // NETCO SPORTS SIGNED HTTP HEADER FIELDS
     if (self.NS_CLIENT_ID && self.NS_CLIENT_SECRET && [self.NS_CLIENT_ID length] > 0 && [self.NS_CLIENT_SECRET length] > 0)
     {
-        NSString *urlForSig = url;
-        BOOL isJSONForSig = [requestSerializer isMemberOfClass:[AFJSONRequestSerializer class]];
-        
-        if (httpRequestType == eNSHttpRequestGET)
-        {
-            NSArray *urlTab = [url componentsSeparatedByString:@"?"];
-            if (urlTab && [urlTab count] == 2)
-            {
-                isJSONForSig = NO;
-                urlForSig = urlTab[0];
-                
-                NSMutableDictionary *newParams = [[NSMutableDictionary alloc] init];
-                NSArray *paramTab = [urlTab[1] componentsSeparatedByString:@"&"];
-                for (NSString *keyValue in paramTab)
-                {
-                    NSArray *keyValueTab = [keyValue componentsSeparatedByString:@"="];
-                    if (keyValueTab && [keyValueTab count] == 2)
-                    {
-                        [newParams setObject:keyValueTab[1] forKey:keyValueTab[0]];
-                    }
-                }
-                parameters = [newParams ToUnMutable];
-            }
-        }
-        
-        [[NSHTTPRequester genSignatureHeaders:self.NS_CLIENT_ID clientSecret:self.NS_CLIENT_SECRET forUrl:urlForSig params:parameters isJSON:isJSONForSig] enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop)
+        [[NSHTTPRequester genSignatureHeaders:self.NS_CLIENT_ID clientSecret:self.NS_CLIENT_SECRET forUrl:url params:parameters isJSON:[requestSerializer isMemberOfClass:[AFJSONRequestSerializer class]]] enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop)
         {
             if (obj && [obj isKindOfClass:[NSDictionary class]])
             {
@@ -408,12 +414,13 @@
             break;
     }
     
-    // QUEUE MANAGEMENT
-    afNetworkingOperation.completionQueue = [NSObject isMainQueue] ? nil : [NSObject backgroundQueueBlock:nil];
-
     // CACHE BLOCK
     if (afNetworkingOperation)
     {
+        // QUEUE MANAGEMENT
+        afNetworkingOperation.completionQueue = [NSObject isMainQueue] ? nil : [NSObject backgroundQueueBlock:nil];
+        
+        // CACHE BLOCK
         [afNetworkingOperation setCacheResponseBlock:^NSCachedURLResponse *(NSURLConnection *connection, NSCachedURLResponse *cachedResponse)
          {
              // Block Called only if : Cache-Control is set into http response header
@@ -422,6 +429,13 @@
              else
                  return nil;
          }];
+
+        // REDIRECTION BLOCK
+        [afNetworkingOperation setRedirectResponseBlock:^NSURLRequest *(NSURLConnection *connection, NSURLRequest *request, NSURLResponse *redirectResponse)
+        {
+            return request;
+        }];
+
     }
     return afNetworkingOperation;
 }
