@@ -263,7 +263,6 @@
     else
         [afNetworkingManager.requestSerializer setCachePolicy:NSURLRequestReloadIgnoringLocalAndRemoteCacheData];
 
-
     // FORCE RESPONSE SERIALIZER TO ACCEPT CONTENT-TYPE (text/html & text/plain) as well.
     // (thefanclub.com send response with only one content-type : text/html).
     // json mocks usually do not use application/json but text/plain instead.
@@ -295,6 +294,10 @@
                     if (keyValueTab && [keyValueTab count] == 2)
                     {
                         [newParams setObject:keyValueTab[1] forKey:keyValueTab[0]];
+                    }
+                    else if (keyValueTab && [keyValueTab count] == 1)
+                    {
+                        [newParams setObject:@"" forKey:keyValueTab[0]];
                     }
                 }
                 parameters = [newParams ToUnMutable];
