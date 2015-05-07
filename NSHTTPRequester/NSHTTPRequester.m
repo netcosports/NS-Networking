@@ -344,18 +344,14 @@
         
         if (completion)
         {
-//            [NSObject mainQueueBlock:^{
-                completion(responseObject, [operation.response statusCode], operation, nil, NO);
-//            }];
+            completion(responseObject, [operation.response statusCode], operation, nil, NO);
         }
     };
     void (^failureCompletionBlock)(AFHTTPRequestOperation *operation, NSError *error) = ^(AFHTTPRequestOperation *operation, NSError *error)
     {
         if (completion)
         {
-//            [NSObject mainQueueBlock:^{
-                completion(operation.responseObject, [operation.response statusCode], operation, error, NO);
-//            }];
+            completion(operation.responseObject, [operation.response statusCode], operation, error, NO);
         }
     };
 
