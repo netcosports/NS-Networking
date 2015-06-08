@@ -175,39 +175,39 @@
 
 #pragma mark - HTTP Methods
 #pragma mark GET
-+(void)GET:(NSString *)url usingCacheTTL:(NSInteger)cacheTTL andCompletionBlock:(void(^)(NSDictionary *response, NSInteger httpCode, AFHTTPRequestOperation *requestOperation, NSError *error, BOOL isCached))completion
++(AFHTTPRequestOperation *)GET:(NSString *)url usingCacheTTL:(NSInteger)cacheTTL andCompletionBlock:(void(^)(NSDictionary *response, NSInteger httpCode, AFHTTPRequestOperation *requestOperation, NSError *error, BOOL isCached))completion
 {
-    [NSHTTPRequester GET:url usingCacheTTL:cacheTTL requestSerializer:[AFJSONRequestSerializer serializer] responseSerializer:[AFJSONResponseSerializer serializer] andCompletionBlock:completion];
+    return [NSHTTPRequester GET:url usingCacheTTL:cacheTTL requestSerializer:[AFJSONRequestSerializer serializer] responseSerializer:[AFJSONResponseSerializer serializer] andCompletionBlock:completion];
 }
 
 #pragma mark POST
-+(void)POST:(NSString *)url withParameters:(id)params andCompletionBlock:(void(^)(NSDictionary *response, NSInteger httpCode, AFHTTPRequestOperation *requestOperation, NSError *error))completion
++(AFHTTPRequestOperation *)POST:(NSString *)url withParameters:(id)params andCompletionBlock:(void(^)(NSDictionary *response, NSInteger httpCode, AFHTTPRequestOperation *requestOperation, NSError *error))completion
 {
-    [NSHTTPRequester POST:url withParameters:params requestSerializer:[AFJSONRequestSerializer serializer] responseSerializer:[AFJSONResponseSerializer serializer] andCompletionBlock:completion];
+    return [NSHTTPRequester POST:url withParameters:params requestSerializer:[AFJSONRequestSerializer serializer] responseSerializer:[AFJSONResponseSerializer serializer] andCompletionBlock:completion];
 }
 
 #pragma mark PUT
-+(void)PUT:(NSString *)url withParameters:(id)params andCompletionBlock:(void(^)(NSDictionary *response, NSInteger httpCode, AFHTTPRequestOperation *requestOperation, NSError *error))completion
++(AFHTTPRequestOperation *)PUT:(NSString *)url withParameters:(id)params andCompletionBlock:(void(^)(NSDictionary *response, NSInteger httpCode, AFHTTPRequestOperation *requestOperation, NSError *error))completion
 {
-    [NSHTTPRequester PUT:url withParameters:params requestSerializer:[AFJSONRequestSerializer serializer] responseSerializer:[AFJSONResponseSerializer serializer] andCompletionBlock:completion];
+    return [NSHTTPRequester PUT:url withParameters:params requestSerializer:[AFJSONRequestSerializer serializer] responseSerializer:[AFJSONResponseSerializer serializer] andCompletionBlock:completion];
 }
 
 #pragma mark DELETE
-+(void)DELETE:(NSString *)url withParameters:(id)params andCompletionBlock:(void(^)(NSDictionary *response, NSInteger httpCode, AFHTTPRequestOperation *requestOperation, NSError *error))completion
++(AFHTTPRequestOperation *)DELETE:(NSString *)url withParameters:(id)params andCompletionBlock:(void(^)(NSDictionary *response, NSInteger httpCode, AFHTTPRequestOperation *requestOperation, NSError *error))completion
 {
-    [NSHTTPRequester DELETE:url withParameters:params requestSerializer:[AFJSONRequestSerializer serializer] responseSerializer:[AFJSONResponseSerializer serializer] andCompletionBlock:completion];
+    return [NSHTTPRequester DELETE:url withParameters:params requestSerializer:[AFJSONRequestSerializer serializer] responseSerializer:[AFJSONResponseSerializer serializer] andCompletionBlock:completion];
 }
 
 #pragma mark UPLOAD
-+(void)UPLOADmp:(NSString *)url withParameters:(id)params sendingBlock:(void(^)(long long totalBytesWritten, long long totalBytesExpectedToWrite, double percentageUploaded))sending andCompletionBlock:(void(^)(NSDictionary *response, NSInteger httpCode, AFHTTPRequestOperation *requestOperation, NSError *error))completion
++(AFHTTPRequestOperation *)UPLOADmp:(NSString *)url withParameters:(id)params sendingBlock:(void(^)(long long totalBytesWritten, long long totalBytesExpectedToWrite, double percentageUploaded))sending andCompletionBlock:(void(^)(NSDictionary *response, NSInteger httpCode, AFHTTPRequestOperation *requestOperation, NSError *error))completion
 {
-    [NSHTTPRequester UPLOADmp:url withParameters:params requestSerializer:[AFHTTPRequestSerializer serializer] responseSerializer:[AFJSONResponseSerializer serializer] sendingBlock:sending andCompletionBlock:completion];
+    return [NSHTTPRequester UPLOADmp:url withParameters:params requestSerializer:[AFHTTPRequestSerializer serializer] responseSerializer:[AFJSONResponseSerializer serializer] sendingBlock:sending andCompletionBlock:completion];
 }
 
 #pragma mark DOWNLOAD
-+(void)DOWNLOAD:(NSString *)url downloadingBlock:(void(^)(long long totalBytesWritten, long long totalBytesExpectedToWrite, double percentageUploaded))downloading andCompletionBlock:(void(^)(NSDictionary *response, NSInteger httpCode, AFHTTPRequestOperation *requestOperation, NSError *error))completion
++(AFHTTPRequestOperation *)DOWNLOAD:(NSString *)url downloadingBlock:(void(^)(long long totalBytesWritten, long long totalBytesExpectedToWrite, double percentageUploaded))downloading andCompletionBlock:(void(^)(NSDictionary *response, NSInteger httpCode, AFHTTPRequestOperation *requestOperation, NSError *error))completion
 {
-    [NSHTTPRequester DOWNLOAD:url requestSerializer:[AFHTTPRequestSerializer serializer] responseSerializer:[AFImageResponseSerializer serializer] downloadingBlock:downloading andCompletionBlock:completion];
+    return [NSHTTPRequester DOWNLOAD:url requestSerializer:[AFHTTPRequestSerializer serializer] responseSerializer:[AFImageResponseSerializer serializer] downloadingBlock:downloading andCompletionBlock:completion];
 }
 
 #pragma mark - Private Creation of Operation
