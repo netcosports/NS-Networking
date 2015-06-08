@@ -411,7 +411,6 @@
             break;
     }
     
-    // CACHE BLOCK
     if (afNetworkingOperation)
     {
         // QUEUE MANAGEMENT
