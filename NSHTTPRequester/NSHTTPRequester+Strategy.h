@@ -26,7 +26,7 @@
  *
  *  @return (/)
  */
-+(void)strategicGET:(NSString *)url usingCacheTTL:(NSInteger)cacheTTL
++(AFHTTPRequestOperation *)strategicGET:(NSString *)url usingCacheTTL:(NSInteger)cacheTTL
   requestSerializer:(id<AFURLRequestSerialization>)customRequestSerializer
  responseSerializer:(id<AFURLResponseSerialization>)customResponseSerializer
 strategicBlockReachableAndCache:(void(^)(NSDictionary *response, NSInteger httpCode, AFHTTPRequestOperation *requestOperation, NSError *error, BOOL isCached))strategicBlocReachCachedData
@@ -38,7 +38,7 @@ andStrategicBlockNotReachableAndCache:(void(^)(NSDictionary *response, NSInteger
  *  Short version of previous declaration. The custom serializers are pre-defined as AFJSONRequestSerializer & AFJSONResponseSerializer
  *
  */
-+(void)strategicGET:(NSString *)url usingCacheTTL:(NSInteger)cacheTTL
++(AFHTTPRequestOperation *)strategicGET:(NSString *)url usingCacheTTL:(NSInteger)cacheTTL
 strategicBlockReachableAndCache:(void(^)(NSDictionary *response, NSInteger httpCode, AFHTTPRequestOperation *requestOperation, NSError *error, BOOL isCached))strategicBlocReachCachedData
 strategicBlockReachableAndNoCache:(void(^)(NSDictionary *response, NSInteger httpCode, AFHTTPRequestOperation *requestOperation, NSError *error, BOOL isCached))strategicBlocDataUpdated
 strategicBlockNotReachableAndNoCache:(void(^)(NSDictionary *response, NSInteger httpCode, AFHTTPRequestOperation *requestOperation, NSError *error, BOOL isCached))strategicBlocNoDataEver
