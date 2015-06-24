@@ -39,7 +39,20 @@
     __weak UIImageView *weak_self = self;
     [self setImageWithURLRequest:request placeholderImage:placeholderImage success:^(NSURLRequest *request, NSHTTPURLResponse *response, UIImage *image)
     {
-        weak_self.image = image;
+//        if ((weak_self.image && weak_self.image != placeholderImage) ||
+//            weak_self.image == nil)
+//        {
+            [UIView animateWithDuration:0.15 animations:^{
+                weak_self.alpha = 0.3f;
+            } completion:^(BOOL finished) {
+                weak_self.image = image;
+                [UIView animateWithDuration:0.15 animations:^{
+                    weak_self.alpha = 1;
+                } completion:^(BOOL finished) {
+                }];
+            }];
+//        }
+
         if (success)
             success(request, response, image);
     } failure:^(NSURLRequest *request, NSHTTPURLResponse *response, NSError *error)
