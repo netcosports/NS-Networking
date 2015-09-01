@@ -219,6 +219,8 @@
                                usingCacheTTL:(NSInteger)cacheTTL
                               andCompletionBlock:(void(^)(NSDictionary *response, NSInteger httpCode, AFHTTPRequestOperation *requestOperation, NSError *error, BOOL isCached))completion
 {
+    url = [url stringByReplacingPercentEscapesUsingEncoding:NSUTF8StringEncoding];
+    url = [url stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding];
     [self printUrl:url forRequestType:httpRequestType];
     
     // CLIENT CACHE
