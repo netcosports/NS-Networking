@@ -78,15 +78,11 @@
     {
         self.completionImageLoaded = ^(UIImage *image)
         {
-            [UIView animateWithDuration:0.2 animations:^{
-                weak_self.alpha = 0.3;
-                
-            } completion:^(BOOL finished) {
-                weak_self.image = image;
-                
-                [UIView animateWithDuration:0.3 animations:^{
-                    weak_self.alpha = 1;
-                }];
+            weak_self.alpha = 0.0;
+            weak_self.image = image;
+            
+            [UIView animateWithDuration:0.15 animations:^{
+                weak_self.alpha = 1;
             }];
         };
     }
@@ -108,13 +104,15 @@
     NSMutableURLRequest *urlRequest = [NSMutableURLRequest requestWithURL:[NSURL URLWithString:[urlString stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding]]];
     [urlRequest setTimeoutInterval:timeInterval];
     [urlRequest addValue:@"image/*" forHTTPHeaderField:@"Accept"];
-    
+    [urlRequest setCachePolicy:NSURLRequestReturnCacheDataElseLoad];
+
     [self cancelImageRequestOperation];
-    
+
     // Cache
     UIImage *cachedImage = [[[self class] sharedImageCache] cachedImageForRequest:urlRequest];
     if (cachedImage)
     {
+        NSLog(@"[CACHE]: %@", urlString);
         if (success)
         {
             success(nil, nil, cachedImage);
@@ -127,6 +125,7 @@
     }
     else
     {
+        NSLog(@"[NO CACHE]: %@", urlString);
         if (placeholderImage)
         {
             self.image = placeholderImage;
@@ -137,6 +136,9 @@
         [self.af_imageRequestOperation setCompletionBlockWithSuccess:^(AFHTTPRequestOperation *operation, id responseObject)
         {
             __strong __typeof(weakSelf)strongSelf = weakSelf;
+            [[[strongSelf class] sharedImageCache] cacheImage:responseObject forRequest:urlRequest];
+            [[[strongSelf class] sharedImageCache] cacheImage:responseObject forRequest:urlRequest];
+
             if ([[urlRequest URL] isEqual:[strongSelf.af_imageRequestOperation.request URL]])
             {
                 if (success)
@@ -145,16 +147,16 @@
                 }
                 else if (responseObject)
                 {
-                    weakSelf.completionImageLoaded(responseObject);
+                    if (weak_self.image == placeholderImage)
+                        weakSelf.completionImageLoaded(responseObject);
+                    else
+                        weak_self.image = responseObject;
                 }
-                
                 if (operation == strongSelf.af_imageRequestOperation)
                 {
                     strongSelf.af_imageRequestOperation = nil;
                 }
             }
-            [[[strongSelf class] sharedImageCache] cacheImage:responseObject forRequest:urlRequest];
-            
         } failure:^(AFHTTPRequestOperation *operation, NSError *error)
         {
             __strong __typeof(weakSelf)strongSelf = weakSelf;
