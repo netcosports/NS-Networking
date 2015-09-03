@@ -112,7 +112,6 @@
     UIImage *cachedImage = [[[self class] sharedImageCache] cachedImageForRequest:urlRequest];
     if (cachedImage)
     {
-        NSLog(@"[CACHE]: %@", urlString);
         if (success)
         {
             success(nil, nil, cachedImage);
@@ -125,7 +124,6 @@
     }
     else
     {
-        NSLog(@"[NO CACHE]: %@", urlString);
         if (placeholderImage)
         {
             self.image = placeholderImage;
@@ -136,7 +134,6 @@
         [self.af_imageRequestOperation setCompletionBlockWithSuccess:^(AFHTTPRequestOperation *operation, id responseObject)
         {
             __strong __typeof(weakSelf)strongSelf = weakSelf;
-            [[[strongSelf class] sharedImageCache] cacheImage:responseObject forRequest:urlRequest];
             [[[strongSelf class] sharedImageCache] cacheImage:responseObject forRequest:urlRequest];
 
             if ([[urlRequest URL] isEqual:[strongSelf.af_imageRequestOperation.request URL]])
