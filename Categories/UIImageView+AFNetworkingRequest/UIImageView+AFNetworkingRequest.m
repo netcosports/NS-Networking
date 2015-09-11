@@ -7,15 +7,16 @@
 //
 
 #import "UIImageView+AFNetworkingRequest.h"
-#import "UIImageView+AFNetworking.h"
 #import <objc/runtime.h>
+
+#if defined(__IPHONE_OS_VERSION_MIN_REQUIRED)
+
 #import "AFHTTPRequestOperation.h"
 
-@interface AFImageCache : NSCache <AFImageCache>
+@interface AFImageRequestCache : NSCache <AFImageRequestCache>
 @end
 
 #pragma mark - Private category (_AFNetworking)
-
 @interface UIImageView (_AFNetworking)
 @property (readwrite, nonatomic, strong, setter = af_setImageRequestOperation:) AFHTTPRequestOperation *af_imageRequestOperation;
 @end
@@ -64,6 +65,46 @@
 @end
 
 @implementation UIImageView (AFNetworkingRequest)
+
++ (id <AFImageRequestCache>)sharedImageCache {
+    static AFImageRequestCache *_af_defaultImageCache = nil;
+    static dispatch_once_t oncePredicate;
+    dispatch_once(&oncePredicate, ^{
+        _af_defaultImageCache = [[AFImageRequestCache alloc] init];
+        
+        [[NSNotificationCenter defaultCenter] addObserverForName:UIApplicationDidReceiveMemoryWarningNotification object:nil queue:[NSOperationQueue mainQueue] usingBlock:^(NSNotification * __unused notification) {
+            [_af_defaultImageCache removeAllObjects];
+        }];
+    });
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wgnu"
+    return objc_getAssociatedObject(self, @selector(sharedImageCache)) ?: _af_defaultImageCache;
+#pragma clang diagnostic pop
+}
+
++ (void)setSharedImageCache:(id <AFImageRequestCache>)imageCache
+{
+    objc_setAssociatedObject(self, @selector(sharedImageCache), imageCache, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
+}
+
+#pragma mark -
+
+- (id <AFURLResponseSerialization>)imageResponseSerializer {
+    static id <AFURLResponseSerialization> _af_defaultImageResponseSerializer = nil;
+    static dispatch_once_t onceToken;
+    dispatch_once(&onceToken, ^{
+        _af_defaultImageResponseSerializer = [AFImageResponseSerializer serializer];
+    });
+    
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wgnu"
+    return objc_getAssociatedObject(self, @selector(imageResponseSerializer)) ?: _af_defaultImageResponseSerializer;
+#pragma clang diagnostic pop
+}
+
+- (void)setImageResponseSerializer:(id <AFURLResponseSerialization>)serializer {
+    objc_setAssociatedObject(self, @selector(imageResponseSerializer), serializer, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
+}
 
 #pragma mark - Image downloads
 - (void)setImageWithURLString:(NSString *)urlString
@@ -197,3 +238,36 @@
 }
 
 @end
+
+#pragma mark -
+
+static inline NSString * AFImageCacheKeyFromURLRequest(NSURLRequest *request) {
+    return [[request URL] absoluteString];
+}
+
+@implementation AFImageRequestCache
+
+- (UIImage *)cachedImageForRequest:(NSURLRequest *)request {
+    switch ([request cachePolicy]) {
+        case NSURLRequestReloadIgnoringCacheData:
+        case NSURLRequestReloadIgnoringLocalAndRemoteCacheData:
+            return nil;
+        default:
+            break;
+    }
+    
+    return [self objectForKey:AFImageCacheKeyFromURLRequest(request)];
+}
+
+- (void)cacheImage:(UIImage *)image
+        forRequest:(NSURLRequest *)request
+{
+    if (image && request) {
+        [self setObject:image forKey:AFImageCacheKeyFromURLRequest(request)];
+    }
+}
+
+@end
+
+#endif
+
