@@ -8,7 +8,18 @@
 
 #import <UIKit/UIKit.h>
 
+#import <Availability.h>
+
+#if defined(__IPHONE_OS_VERSION_MIN_REQUIRED)
+
+@protocol AFURLResponseSerialization, AFImageRequestCache;
+
 @interface UIImageView (AFNetworkingRequest)
+
+@property (nonatomic, strong) id <AFURLResponseSerialization> imageResponseSerializer;
+
++ (id <AFImageRequestCache>)sharedImageCache;
++ (void)setSharedImageCache:(id <AFImageRequestCache>)imageCache;
 
 #pragma mark - Image downloads
 /**
@@ -32,6 +43,8 @@
               timeoutInterval:(NSTimeInterval)timeInterval
              placeholderImage:(UIImage *)placeholderImage;
 
+- (void)cancelImageRequestOperation;
+
 #pragma mark - Image cache
 /**
  * Returns a cached image for the specififed url, if available.
@@ -49,3 +62,27 @@
 + (UIImageView *)imageViewFromCachedImageForUrl:(NSString *)url;
 
 @end
+
+
+@protocol AFImageRequestCache <NSObject>
+
+/**
+ Returns a cached image for the specififed request, if available.
+ 
+ @param request The image request.
+ 
+ @return The cached image.
+ */
+- (UIImage *)cachedImageForRequest:(NSURLRequest *)request;
+
+/**
+ Caches a particular image for the specified request.
+ 
+ @param image The image to cache.
+ @param request The request to be used as a cache key.
+ */
+- (void)cacheImage:(UIImage *)image
+        forRequest:(NSURLRequest *)request;
+@end
+
+#endif
