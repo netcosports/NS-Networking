@@ -9,6 +9,7 @@
 #import "NSHTTPRequester+Properties.h"
 #import "NSHTTPRequester+Private.h"
 #import "NSObject+NSObject_Xpath.h"
+#import "NSUsefulDefines.h"
 
 @implementation NSHTTPRequester (Properties)
 
