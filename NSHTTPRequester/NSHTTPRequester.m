@@ -17,7 +17,7 @@
 #import "NSObject+NSObject_Xpath.h"
 #import "NSString+NSString_Tool.h"
 #import "NSObject+NSObject_File.h"
-#import "NSObject+NSObject_Tool.h"
+#import "NSObject+NSObject_Block.h"
 
 #define HEADER_X_API_CLIENT_ID  @"X-Api-Client-Id"
 #define HEADER_X_API_SIG        @"X-Api-Sig"
@@ -343,18 +343,14 @@
         
         if (completion)
         {
-//            [NSObject mainQueueBlock:^{
-                completion(responseObject, [operation.response statusCode], operation, nil, NO);
-//            }];
+            completion(responseObject, [operation.response statusCode], operation, nil, NO);
         }
     };
     void (^failureCompletionBlock)(AFHTTPRequestOperation *operation, NSError *error) = ^(AFHTTPRequestOperation *operation, NSError *error)
     {
         if (completion)
         {
-//            [NSObject mainQueueBlock:^{
-                completion(operation.responseObject, [operation.response statusCode], operation, error, NO);
-//            }];
+            completion(operation.responseObject, [operation.response statusCode], operation, error, NO);
         }
     };
 
