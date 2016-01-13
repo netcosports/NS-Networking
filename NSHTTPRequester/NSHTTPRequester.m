@@ -266,13 +266,14 @@
     else
         [afNetworkingManager.requestSerializer setCachePolicy:NSURLRequestReloadIgnoringLocalAndRemoteCacheData];
 
-    // FORCE RESPONSE SERIALIZER TO ACCEPT CONTENT-TYPE (text/html & text/plain) as well.
+    // FORCE RESPONSE SERIALIZER TO ACCEPT CONTENT-TYPE (text/html, text/plain and application/ld+json) as well.
     // (thefanclub.com send response with only one content-type : text/html).
     // json mocks usually do not use application/json but text/plain instead.
-    NSMutableSet *setOfAcceptablesContentTypesInResonse = [afNetworkingManager.responseSerializer.acceptableContentTypes mutableCopy];
-    [setOfAcceptablesContentTypesInResonse addObject:@"text/html"];
-    [setOfAcceptablesContentTypesInResonse addObject:@"text/plain"];
-    [afNetworkingManager.responseSerializer setAcceptableContentTypes:setOfAcceptablesContentTypesInResonse];
+    NSMutableSet *acceptableResponseContentTypes = [afNetworkingManager.responseSerializer.acceptableContentTypes mutableCopy];
+    [acceptableResponseContentTypes addObject:@"text/html"];
+    [acceptableResponseContentTypes addObject:@"text/plain"];
+    [acceptableResponseContentTypes addObject:@"application/ld+json"];
+    [afNetworkingManager.responseSerializer setAcceptableContentTypes:acceptableResponseContentTypes];
 
     
     // NETCO SPORTS SIGNED HTTP HEADER FIELDS
