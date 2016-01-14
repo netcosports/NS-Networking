@@ -222,7 +222,10 @@
 {
     url = [url stringByReplacingPercentEscapesUsingEncoding:NSUTF8StringEncoding];
     url = [url stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding];
-    [self printUrl:url forRequestType:httpRequestType];
+    if ([NSHTTPRequester sharedRequester].verbose)
+    {
+        [self printUrl:url forRequestType:httpRequestType];
+    }
     
     // CLIENT CACHE
     if (cacheTTL > 0 && httpRequestType == eNSHttpRequestGET)
