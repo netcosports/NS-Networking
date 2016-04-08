@@ -386,7 +386,8 @@
                 UIImage *imageToUpload = [parameters getXpathNil:@"image" type:[UIImage class]];
                 NSString *mimeType = [parameters getXpathNilString:@"mimetype"];
                 NSString *fileName = [parameters getXpathNilString:@"filename"];
-
+                NSString *serverFieldName = [parameters getXpathNilString:@"fieldname"];
+                
                 if (imageToUpload)
                 {
                     NSData *imageData = UIImageJPEGRepresentation(imageToUpload, 0.5);
@@ -398,7 +399,7 @@
                         else
                             impliedFileName = @"file";
                     }
-                    [formData appendPartWithFileData:imageData name:@"file" fileName:impliedFileName mimeType:mimeType];
+                    [formData appendPartWithFileData:imageData name:(serverFieldName ? serverFieldName : @"file") fileName:impliedFileName mimeType:mimeType];
                 }
             } success:successCompletionBlock failure:failureCompletionBlock];
             break;
