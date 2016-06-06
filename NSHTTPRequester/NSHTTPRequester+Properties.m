@@ -8,7 +8,8 @@
 
 #import "NSHTTPRequester+Properties.h"
 
-#import <NSCategories/NSHTTPRequester+Private.h>
+#import "NSHTTPRequester+Private.h"
+
 #import <NSCategories/NSObject+NSObject_Xpath.h>
 #import <NSCategories/NSUsefulDefines.h>
 
