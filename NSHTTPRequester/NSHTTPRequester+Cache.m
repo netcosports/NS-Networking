@@ -7,9 +7,10 @@
 //
 
 #import "NSHTTPRequester+Cache.h"
-#import "NSString+NSString_Tool.h"
-#import "NSObject+NSObject_File.h"
-#import "NSUsefulDefines.h"
+
+#import <NSCategories/NSString+NSString_Tool.h>
+#import <NSCategories/NSObject+NSObject_File.h>
+#import <NSCategories/NSUsefulDefines.h>
 
 @implementation NSHTTPRequester (Cache)
 

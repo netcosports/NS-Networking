@@ -7,9 +7,10 @@
 //
 
 #import "NSHTTPRequester+Properties.h"
-#import "NSHTTPRequester+Private.h"
-#import "NSObject+NSObject_Xpath.h"
-#import "NSUsefulDefines.h"
+
+#import <NSCategories/NSHTTPRequester+Private.h>
+#import <NSCategories/NSObject+NSObject_Xpath.h>
+#import <NSCategories/NSUsefulDefines.h>
 
 @implementation NSHTTPRequester (Properties)
 

@@ -7,9 +7,11 @@
 //
 
 #import "NSHTTPRequester+Strategy.h"
+
 #import "NSHTTPRequester+Serializer.h"
 #import "NSHTTPRequester+Cache.h"
-#import "NSUsefulDefines.h"
+
+#import <NSCategories/NSUsefulDefines.h>
 
 @implementation NSHTTPRequester (Strategy)
 
