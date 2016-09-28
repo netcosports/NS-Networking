@@ -36,7 +36,7 @@
 
 +(void)cacheValue:(id)value forUrl:(NSString *)url
 {
-    if (value && [value isKindOfClass:[NSDictionary class]])
+    if ([value isKindOfClass:[NSDictionary class]] || [value isKindOfClass:[NSArray class]])
     {
         if ([NSHTTPRequester sharedRequester].verbose)
             DLog(@"[%@] Cache saved => %@", NSStringFromClass([self class]), url);
