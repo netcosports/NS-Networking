@@ -11,7 +11,7 @@
 #import "NSHTTPRequester+Serializer.h"
 #import "NSHTTPRequester+Cache.h"
 
-#import <NSCategories/NSUsefulDefines.h>
+#import <NS-Categories/NSUsefulDefines.h>
 
 @implementation NSHTTPRequester (Strategy)
 
@@ -24,7 +24,7 @@ strategicBlockNotReachableAndNoCache:(void(^)(NSDictionary *response, NSInteger 
 andStrategicBlockNotReachableAndCache:(void(^)(NSDictionary *response, NSInteger httpCode, AFHTTPRequestOperation *requestOperation, NSError *error, BOOL isCached))strategicBlocNotReachCachedData
 {
     [[AFNetworkReachabilityManager sharedManager] startMonitoring];
-    
+
     return [NSHTTPRequester GET:url usingCacheTTL:cacheTTL requestSerializer:customRequestSerializer responseSerializer:customResponseSerializer andCompletionBlock:^(NSDictionary *response, NSInteger httpCode, AFHTTPRequestOperation *requestOperation, NSError *error, BOOL isCached)
     {
         if ([AFNetworkReachabilityManager sharedManager].isReachable == YES && isCached == YES)
@@ -35,14 +35,14 @@ andStrategicBlockNotReachableAndCache:(void(^)(NSDictionary *response, NSInteger
         else if ([AFNetworkReachabilityManager sharedManager].isReachable == NO && isCached == YES)
         {
             [[AFNetworkReachabilityManager sharedManager] stopMonitoring];
-            
+
             if (strategicBlocNotReachCachedData)
                 strategicBlocNotReachCachedData(response, httpCode, requestOperation, error, isCached);
         }
         else if ([AFNetworkReachabilityManager sharedManager].isReachable == NO && isCached == NO) // Cache exists in that case ?
         {
             [[AFNetworkReachabilityManager sharedManager] stopMonitoring];
-            
+
             if (response || requestOperation.responseData)
             {
                 DLog(@"Response exist ??? WHY ??");
@@ -62,12 +62,12 @@ andStrategicBlockNotReachableAndCache:(void(^)(NSDictionary *response, NSInteger
                         strategicBlocNoDataEver(response, httpCode, requestOperation, error, isCached);
                 }
             }
-            
+
         }
         else if ([AFNetworkReachabilityManager sharedManager].isReachable == YES && isCached == NO) // Cache has been created, it didn't exist before, good to go!
         {
             [[AFNetworkReachabilityManager sharedManager] stopMonitoring];
-            
+
             if (strategicBlocDataUpdated)
                 strategicBlocDataUpdated(response, httpCode, requestOperation, error, isCached);
         }
