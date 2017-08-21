@@ -14,11 +14,11 @@
 #import "NSHTTPRequester+Serializer.h"
 #import "NSHTTPRequester+Private.h"
 
-#import <NS-Categories/NSString+NSString_Tool.h>
-#import <NS-Categories/NSObject+NSObject_Xpath.h>
-#import <NS-Categories/NSObject+NSObject_File.h>
-#import <NS-Categories/NSObject+NSObject_Block.h>
-#import <NS-Categories/NSUsefulDefines.h>
+#import <NSCategories/NSString+NSString_Tool.h>
+#import <NSCategories/NSObject+NSObject_Xpath.h>
+#import <NSCategories/NSObject+NSObject_File.h>
+#import <NSCategories/NSObject+NSObject_Block.h>
+#import <NSCategories/NSUsefulDefines.h>
 
 #define HEADER_X_API_CLIENT_ID  @"X-Api-Client-Id"
 #define HEADER_X_API_SIG        @"X-Api-Sig"
@@ -119,21 +119,21 @@
             DLog(@"Bad json string !");
         return jsonString;
     }
-
+    
     jsonString = [jsonString strReplace:@"\n" by:@""];
 
     __block NSMutableIndexSet *indexSetOfCharacterToremove = [[NSMutableIndexSet alloc] init];
     __block NSInteger numberOfParsedQuotes = 0;
-
+    
     [jsonString enumerateSubstringsInRange:NSMakeRange(0, [jsonString length]) options:NSStringEnumerationByComposedCharacterSequences usingBlock:^(NSString *substring, NSRange substringRange, NSRange enclosingRange, BOOL *stop)
      {
          if ([substring isEqualToString:@"\""])
              numberOfParsedQuotes += 1;
-
+         
          if ([substring isEqualToString:@" "] && numberOfParsedQuotes % 2 == 0)
              [indexSetOfCharacterToremove addIndex:substringRange.location];
      }];
-
+    
     __block NSInteger numberOfReplacedCharacters = 0;
     __block NSMutableString *mutableString = [jsonString mutableCopy];
     [indexSetOfCharacterToremove enumerateIndexesUsingBlock:^(NSUInteger idx, BOOL *stop)
@@ -226,7 +226,7 @@
     {
         [self printUrl:url forRequestType:httpRequestType];
     }
-
+    
     // CLIENT CACHE
     if (cacheTTL > 0 && httpRequestType == eNSHttpRequestGET)
     {
@@ -259,10 +259,10 @@
         if (self.verbose)
             DLog(@"Bad response serializer");
     }
-
+    
     // COOKIES
     [afNetworkingManager.requestSerializer setHTTPShouldHandleCookies:self.ishandlingCookies];
-
+    
     // SERVER CACHE POLICY
     if (cacheTTL > 0)
         [afNetworkingManager.requestSerializer setCachePolicy:NSURLRequestUseProtocolCachePolicy];
@@ -278,13 +278,13 @@
     [acceptableResponseContentTypes addObject:@"application/ld+json"];
     [afNetworkingManager.responseSerializer setAcceptableContentTypes:acceptableResponseContentTypes];
 
-
+    
     // NETCO SPORTS SIGNED HTTP HEADER FIELDS
     if (self.NS_CLIENT_ID && self.NS_CLIENT_SECRET && [self.NS_CLIENT_ID length] > 0 && [self.NS_CLIENT_SECRET length] > 0)
     {
         NSString *urlForSig = url;
         BOOL isJSONForSig = [requestSerializer isMemberOfClass:[AFJSONRequestSerializer class]];
-
+        
         if (httpRequestType == eNSHttpRequestGET)
         {
             NSArray *urlTab = [url componentsSeparatedByString:@"?"];
@@ -292,7 +292,7 @@
             {
                 isJSONForSig = NO;
                 urlForSig = urlTab[0];
-
+                
                 NSMutableDictionary *newParams = [[NSMutableDictionary alloc] init];
                 NSArray *paramTab = [urlTab[1] componentsSeparatedByString:@"&"];
                 for (NSString *keyValue in paramTab)
@@ -310,7 +310,7 @@
                 parameters = [newParams ToUnMutable];
             }
         }
-
+        
         [[NSHTTPRequester genSignatureHeaders:self.NS_CLIENT_ID clientSecret:self.NS_CLIENT_SECRET forUrl:urlForSig params:parameters isJSON:isJSONForSig] enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop)
         {
             if (obj && [obj isKindOfClass:[NSDictionary class]])
@@ -326,7 +326,7 @@
     // CUSTOM TIMEOUT
     CGFloat timeoutForUrl = [self getCustomTimeoutsForUrl:url];
     [afNetworkingManager.requestSerializer setTimeoutInterval:timeoutForUrl];
-
+    
     // CUSTOM HTTP HEADER FIELDS
     NSArray *customHttpHeaders = [self getCustomHeadersForUrl:url];
     if (customHttpHeaders && [customHttpHeaders count] > 0)
@@ -345,7 +345,7 @@
     {
         if (httpRequestType == eNSHttpRequestGET)
             [NSHTTPRequester cacheValue:responseObject forUrl:url]; // Store a Cached version of the response every time it's called.
-
+        
         if (completion)
         {
             completion(responseObject, [operation.response statusCode], operation, nil, NO);
@@ -387,7 +387,7 @@
                 NSString *mimeType = [parameters getXpathNilString:@"mimetype"];
                 NSString *fileName = [parameters getXpathNilString:@"filename"];
                 NSString *serverFieldName = [parameters getXpathNilString:@"fieldname"];
-
+                
                 if (imageToUpload)
                 {
                     NSData *imageData = UIImageJPEGRepresentation(imageToUpload, 0.5);
@@ -414,12 +414,12 @@
             afNetworkingOperation = [afNetworkingManager GET:url parameters:nil success:successCompletionBlock failure:failureCompletionBlock];
             break;
     }
-
+    
     if (afNetworkingOperation)
     {
         // QUEUE MANAGEMENT
         afNetworkingOperation.completionQueue = [NSObject isMainQueue] ? nil : [NSObject backgroundQueueBlock:nil];
-
+        
         // CACHE BLOCK
         [afNetworkingOperation setCacheResponseBlock:^NSCachedURLResponse *(NSURLConnection *connection, NSCachedURLResponse *cachedResponse)
          {
@@ -443,7 +443,7 @@
 -(void)printUrl:(NSString *)url forRequestType:(eNSHttpRequestType)requestType
 {
     NSString *httpMethod = @"";
-
+    
     if (requestType == eNSHttpRequestGET)
         httpMethod = @"GET";
     else if (requestType == eNSHttpRequestPOST)
@@ -458,7 +458,7 @@
         httpMethod = @"DOWNLOAD";
     else
         httpMethod = @"";
-
+    
    NSLog(@"[%@] %@ => %@", NSStringFromClass([self class]), httpMethod, url);
 }
 

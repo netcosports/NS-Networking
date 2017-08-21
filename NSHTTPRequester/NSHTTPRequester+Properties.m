@@ -10,8 +10,8 @@
 
 #import "NSHTTPRequester+Private.h"
 
-#import <NS-Categories/NSObject+NSObject_Xpath.h>
-#import <NS-Categories/NSUsefulDefines.h>
+#import <NSCategories/NSObject+NSObject_Xpath.h>
+#import <NSCategories/NSUsefulDefines.h>
 
 @implementation NSHTTPRequester (Properties)
 
@@ -21,10 +21,10 @@
     {
         case eNSHttpPropertyHeader:
             return @"header";
-
+            
         case eNSHttpPropertyTimeout:
             return @"timeout";
-
+            
         default:
             return @"unknown";
     }
@@ -56,15 +56,15 @@
 {
     if (!customPropertiesForUrl)
         return ;
-
+    
     NSMutableIndexSet *indexSet = [[NSMutableIndexSet alloc] init];
-
+    
     for (NSDictionary *element in customPropertiesForUrl)
     {
         if ([self getPropertyTypeFromString:[element getXpathEmptyString:@"type"]] == propertyType)
         {
             NSString *urlRegEx = [element getXpathNilString:@"urlRegEx"];
-
+            
             if (urlRegEx && regExUrl && [urlRegEx isEqualToString:regExUrl])
             {
                 [indexSet addIndex:[customPropertiesForUrl indexOfObject:element]];
@@ -77,16 +77,16 @@
 -(NSArray *) getCustomValuesWithPropertyType:(eNSHttpRequestPropertyType)propertyType forUrl:(NSString *)url
 {
     NSMutableArray *arrayOfCustomValues = [NSMutableArray new];
-
+    
     if (!customPropertiesForUrl)
         return nil;
-
+    
     for (NSDictionary *element in customPropertiesForUrl)
     {
         if ([self getPropertyTypeFromString:[element getXpathEmptyString:@"type"]] == propertyType)
         {
             NSString *urlRegEx = [element getXpathNilString:@"urlRegEx"];
-
+            
             if (element && urlRegEx)
             {
                 NSError *error;
@@ -94,7 +94,7 @@
                 if ([regex numberOfMatchesInString:url options:0 range:NSMakeRange(0, [url length])] > 0)
                 {
                     id value = [element objectForKey:@"value"];
-
+                    
                     if (value && [value isKindOfClass:[NSArray class]])
                     {
                         [arrayOfCustomValues addObjectsFromArray:value];
@@ -189,9 +189,9 @@
             DLog(@"Bad url");
         return self.generalTimeout;
     }
-
+    
     NSArray *arrayOfTimeouts = [self getCustomValuesWithPropertyType:eNSHttpPropertyTimeout forUrl:url];
-
+    
     if (arrayOfTimeouts && [arrayOfTimeouts count] > 0)
         return [[arrayOfTimeouts objectAtIndex:0] floatValue];
     else
@@ -199,3 +199,6 @@
 }
 
 @end
+
+
+
