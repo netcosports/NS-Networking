@@ -15,14 +15,14 @@
  *  reachability state & the local cache (Post-Serialization cache -- NSHTTPRequester layer).
  *
  *  @param url     Url for which to save a cached version of the response
- *  @param ttlFile TTL on the file to get the cache from.
- *  @param requestSerializer    Custom request serializer implementing protocol `AFURLRequestSerialization'
- *  @param responseSerializer   Custom response serializer implementing protocol `AFURLResponseSerialization'
+ *  @param cacheTTL TTL on the file to get the cache from.
+ *  @param customRequestSerializer    Custom request serializer implementing protocol AFURLRequestSerialization
+ *  @param customResponseSerializer   Custom response serializer implementing protocol AFURLResponseSerialization
  
- *  @param strategicBlockReachableAndCache: The network is reachable & the data comes from the NSHTTPRequester cache.
- *  @param strategicBlockReachableAndNoCache: The network is reachable & the data does not come from the NSHTTPRequester cache.
- *  @param strategicBlockNotReachableAndNoCache: The network is not reachable & the data does not come from the NSHTTPRequester cache.
- *  @param andStrategicBlockNotReachableAndCache: The network is not reachable & the data comes from the NSHTTPRequester cache.
+ *  @param strategicBlocReachCachedData The network is reachable & the data comes from the NSHTTPRequester cache.
+ *  @param strategicBlocDataUpdated The network is reachable & the data does not come from the NSHTTPRequester cache.
+ *  @param strategicBlocNoDataEver The network is not reachable & the data does not come from the NSHTTPRequester cache.
+ *  @param strategicBlocNotReachCachedData The network is not reachable & the data comes from the NSHTTPRequester cache.
  *
  *  @return (/)
  */
