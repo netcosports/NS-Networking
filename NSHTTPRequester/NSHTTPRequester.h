@@ -53,8 +53,8 @@
  *  NB2: Same methods with custom request && response serializers exist (cf. NSHTTPRequester+Serializer)
  *
  *  @param url            Entire URL (e.g http://ip.jsontest.com)
- *  @param usingCacheTTL  Defines if the requester should return local client-side cache or not, reguarding the ttl.
- *  @param cb_rep         Block callback response when a response is received
+ *  @param cacheTTL       Defines if the requester should return local client-side cache or not, reguarding the ttl.
+ *  @param completion     Block callback response when a response is received
  *                        (with the JSON body, the http status code, and boolean describing if the response comes from local cache or not)
  */
 +(AFHTTPRequestOperation *)GET:(NSString *)url usingCacheTTL:(NSInteger)cacheTTL andCompletionBlock:(void(^)(NSDictionary *response, NSInteger httpCode, AFHTTPRequestOperation *requestOperation, NSError *error, BOOL isCached))completion;

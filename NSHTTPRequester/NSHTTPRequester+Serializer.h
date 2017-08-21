@@ -12,14 +12,14 @@
 
 /**
  *  HTTP Methods [GET, POST, PUT, DELETE] & Custom UPLOAD using multipart POST
- *  These methods are used by default ones (@interface NSHTTPRequester).
+ *  These methods are used by default ones (interface of NSHTTPRequester).
  *  They are meant to override default request & response serializers depending on the type of HTTP servers you are hitting.
  *
  *  @param url                  Entire URL (e.g http://ip.jsontest.com)
- *  @param usingCacheTTL        Defines if the requester should return local client-side cache or not, reguarding the ttl.
- *  @param requestSerializer    Custom request serializer implementing protocol `AFURLRequestSerialization'
- *  @param responseSerializer   Custom response serializer implementing protocol `AFURLResponseSerialization'
- *  @param cb_rep               Block callback response when a response is received
+ *  @param cacheTTL        Defines if the requester should return local client-side cache or not, reguarding the ttl.
+ *  @param customRequestSerializer    Custom request serializer implementing protocol `AFURLRequestSerialization'
+ *  @param customResponseSerializer   Custom response serializer implementing protocol `AFURLResponseSerialization'
+ *  @param completion               Block callback response when a response is received
  *                              (with the JSON body, the http status code, and boolean describing if the response comes from local cache or not)
  */
 
