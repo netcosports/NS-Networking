@@ -10,8 +10,8 @@
 
 #import "NSHTTPRequester+Private.h"
 
-#import <NSCategories/NSObject+NSObject_Xpath.h>
-#import <NSCategories/NSUsefulDefines.h>
+#import <NSTCategories/NSObject+NSObject_Xpath.h>
+#import <NSTCategories/NSUsefulDefines.h>
 
 @implementation NSHTTPRequester (Properties)
 

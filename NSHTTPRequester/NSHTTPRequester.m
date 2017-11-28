@@ -14,11 +14,11 @@
 #import "NSHTTPRequester+Serializer.h"
 #import "NSHTTPRequester+Private.h"
 
-#import <NSCategories/NSString+NSString_Tool.h>
-#import <NSCategories/NSObject+NSObject_Xpath.h>
-#import <NSCategories/NSObject+NSObject_File.h>
-#import <NSCategories/NSObject+NSObject_Block.h>
-#import <NSCategories/NSUsefulDefines.h>
+#import <NSTCategories/NSString+NSString_Tool.h>
+#import <NSTCategories/NSObject+NSObject_Xpath.h>
+#import <NSTCategories/NSObject+NSObject_File.h>
+#import <NSTCategories/NSObject+NSObject_Block.h>
+#import <NSTCategories/NSUsefulDefines.h>
 
 #define HEADER_X_API_CLIENT_ID  @"X-Api-Client-Id"
 #define HEADER_X_API_SIG        @"X-Api-Sig"

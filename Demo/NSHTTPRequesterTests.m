@@ -6,7 +6,7 @@
 //  Copyright (c) 2014 Netco Sports. All rights reserved.
 //
 
-#import <NSCategories/NSObject+NSObject_Tool.h>
+#import <NSTCategories/NSObject+NSObject_Tool.h>
 
 #import "NSHTTPRequesterTests.h"
 #import "NSHTTPRequester.h"
