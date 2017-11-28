@@ -14,7 +14,7 @@ Pod::Spec.new do |s|
   s.pod_target_xcconfig = { 'CLANG_ALLOW_NON_MODULAR_INCLUDES_IN_FRAMEWORK_MODULES' => 'YES' }
 
   s.dependency 'NS-Categories', '~> 1.1'
-  s.dependency 'AFNetworking', '2.6.1'
+  s.dependency 'AFNetworking', '2.6.3'
 
   s.source_files = 'NSHTTPRequester'
 
