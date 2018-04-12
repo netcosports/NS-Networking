@@ -1,7 +1,7 @@
 lint:
 	pod lib lint --private --sources=https://github.com/netcosports/PodsSpecs,master --verbose --allow-warnings
 
-VERSION := $(shell pod ipc spec NSTNetworking.podspec | jq .version)
+VERSION := $(shell pod ipc spec NSTNetworking.podspec | ./scripts/jq .version)
 NEW_VERSION := $(shell ./scripts/semver bump patch $(VERSION))
 
 release: lint
