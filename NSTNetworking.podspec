@@ -19,4 +19,5 @@ Pod::Spec.new do |s|
   s.source_files = 'NSHTTPRequester'
 
   s.frameworks = 'Security'
+  s.static_framework = true
 end
