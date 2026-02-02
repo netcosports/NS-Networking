@@ -23,16 +23,67 @@
  *                              (with the JSON body, the http status code, and boolean describing if the response comes from local cache or not)
  */
 
-+(AFHTTPRequestOperation *)GET:(NSString *)url usingCacheTTL:(NSInteger)cacheTTL requestSerializer:(id<AFURLRequestSerialization>)customRequestSerializer responseSerializer:(id<AFURLResponseSerialization>)customResponseSerializer andCompletionBlock:(void(^)(NSDictionary *response, NSInteger httpCode, AFHTTPRequestOperation *requestOperation, NSError *error, BOOL isCached))completion;
+#pragma mark - Data Tasks (GET, POST, PUT, DELETE)
 
-+(AFHTTPRequestOperation *)POST:(NSString *)url withParameters:(id)params requestSerializer:(id<AFURLRequestSerialization>)customRequestSerializer responseSerializer:(id<AFURLResponseSerialization>)customResponseSerializer andCompletionBlock:(void(^)(NSDictionary *response, NSInteger httpCode, AFHTTPRequestOperation *requestOperation, NSError *error))completion;
++ (NSURLSessionDataTask *)GET:(NSString *)url
+                  usingCacheTTL:(NSInteger)cacheTTL
+               requestSerializer:(AFHTTPRequestSerializer<AFURLRequestSerialization> *)customRequestSerializer
+              responseSerializer:(AFHTTPResponseSerializer<AFURLResponseSerialization> *)customResponseSerializer
+             andCompletionBlock:(void(^)(NSDictionary *response,
+                                         NSInteger httpCode,
+                                         NSURLSessionTask *task,
+                                         NSError *error,
+                                         BOOL isCached))completion;
 
-+(AFHTTPRequestOperation *)PUT:(NSString *)url withParameters:(id)params requestSerializer:(id<AFURLRequestSerialization>)customRequestSerializer responseSerializer:(id<AFURLResponseSerialization>)customResponseSerializer andCompletionBlock:(void(^)(NSDictionary *response, NSInteger httpCode, AFHTTPRequestOperation *requestOperation, NSError *error))completion;
++ (NSURLSessionDataTask *)POST:(NSString *)url
+                withParameters:(id)params
+             requestSerializer:(AFHTTPRequestSerializer<AFURLRequestSerialization> *)customRequestSerializer
+            responseSerializer:(AFHTTPResponseSerializer<AFURLResponseSerialization> *)customResponseSerializer
+           andCompletionBlock:(void(^)(NSDictionary *response,
+                                       NSInteger httpCode,
+                                       NSURLSessionTask *task,
+                                       NSError *error))completion;
 
-+(AFHTTPRequestOperation *)DELETE:(NSString *)url withParameters:(id)params requestSerializer:(id<AFURLRequestSerialization>)customRequestSerializer responseSerializer:(id<AFURLResponseSerialization>)customResponseSerializer andCompletionBlock:(void(^)(NSDictionary *response, NSInteger httpCode, AFHTTPRequestOperation *requestOperation, NSError *error))completion;
++ (NSURLSessionDataTask *)PUT:(NSString *)url
+               withParameters:(id)params
+            requestSerializer:(AFHTTPRequestSerializer<AFURLRequestSerialization> *)customRequestSerializer
+           responseSerializer:(AFHTTPResponseSerializer<AFURLResponseSerialization> *)customResponseSerializer
+          andCompletionBlock:(void(^)(NSDictionary *response,
+                                      NSInteger httpCode,
+                                      NSURLSessionTask *task,
+                                      NSError *error))completion;
 
-+(AFHTTPRequestOperation *)UPLOADmp:(NSString *)url withParameters:(id)params requestSerializer:(AFHTTPRequestSerializer *)customRequestSerializer responseSerializer:(id<AFURLResponseSerialization>)customResponseSerializer sendingBlock:(void(^)(long long totalBytesWritten, long long totalBytesExpectedToWrite, double percentageUploaded))sending andCompletionBlock:(void(^)(NSDictionary *response, NSInteger httpCode, AFHTTPRequestOperation *requestOperation, NSError *error))completion;
++ (NSURLSessionDataTask *)DELETE:(NSString *)url
+                  withParameters:(id)params
+               requestSerializer:(AFHTTPRequestSerializer<AFURLRequestSerialization> *)customRequestSerializer
+              responseSerializer:(AFHTTPResponseSerializer<AFURLResponseSerialization> *)customResponseSerializer
+             andCompletionBlock:(void(^)(NSDictionary *response,
+                                         NSInteger httpCode,
+                                         NSURLSessionTask *task,
+                                         NSError *error))completion;
 
-+(AFHTTPRequestOperation *)DOWNLOAD:(NSString *)url requestSerializer:(AFHTTPRequestSerializer *)customRequestSerializer responseSerializer:(id<AFURLResponseSerialization>)customResponseSerializer downloadingBlock:(void(^)(long long totalBytesRead, long long totalBytesExpectedToRead, double percentageDownloaded))downloading andCompletionBlock:(void(^)(NSDictionary *response, NSInteger httpCode, AFHTTPRequestOperation *requestOperation, NSError *error))completion;
+#pragma mark - Upload / Download Tasks
 
++ (NSURLSessionUploadTask *)UPLOADmp:(NSString *)url
+                       withParameters:(id)params
+                    requestSerializer:(AFHTTPRequestSerializer *)customRequestSerializer
+                   responseSerializer:(AFHTTPResponseSerializer<AFURLResponseSerialization> *)customResponseSerializer
+                         sendingBlock:(void(^)(int64_t totalBytesWritten,
+                                               int64_t totalBytesExpectedToWrite,
+                                               double percentageUploaded))sending
+                  andCompletionBlock:(void(^)(NSDictionary *response,
+                                             NSInteger httpCode,
+                                             NSURLSessionTask *task,
+                                             NSError *error))completion;
+
++ (NSURLSessionDownloadTask *)DOWNLOAD:(NSString *)url
+                      requestSerializer:(AFHTTPRequestSerializer *)customRequestSerializer
+                     responseSerializer:(AFHTTPResponseSerializer<AFURLResponseSerialization> *)customResponseSerializer
+                       downloadingBlock:(void(^)(int64_t totalBytesRead,
+                                                 int64_t totalBytesExpectedToRead,
+                                                 double percentageDownloaded))downloading
+                    andCompletionBlock:(void(^)(NSDictionary *response,
+                                               NSInteger httpCode,
+                                               NSURLSessionTask *task,
+                                               NSError *error))completion;
 @end

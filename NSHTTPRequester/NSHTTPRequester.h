@@ -7,7 +7,6 @@
 //
 
 #import <Foundation/Foundation.h>
-#import <AFNetworking/AFHTTPRequestOperationManager.h>
 #import <AFNetworking/AFHTTPSessionManager.h>
 
 @interface NSHTTPRequester : NSObject
@@ -57,17 +56,53 @@
  *  @param completion     Block callback response when a response is received
  *                        (with the JSON body, the http status code, and boolean describing if the response comes from local cache or not)
  */
-+(AFHTTPRequestOperation *)GET:(NSString *)url usingCacheTTL:(NSInteger)cacheTTL andCompletionBlock:(void(^)(NSDictionary *response, NSInteger httpCode, AFHTTPRequestOperation *requestOperation, NSError *error, BOOL isCached))completion;
++(NSURLSessionDataTask *)GET:(NSString *)url
+             usingCacheTTL:(NSInteger)cacheTTL
+        andCompletionBlock:(void(^)(NSDictionary *response,
+                                   NSInteger httpCode,
+                                   NSURLSessionDataTask *task,
+                                   NSError *error,
+                                   BOOL isCached))completion;
 
-+(AFHTTPRequestOperation *)POST:(NSString *)url withParameters:(id)params andCompletionBlock:(void(^)(NSDictionary *response, NSInteger httpCode, AFHTTPRequestOperation *requestOperation, NSError *error))completion;
++(NSURLSessionDataTask *)POST:(NSString *)url
+              withParameters:(id)params
+        andCompletionBlock:(void(^)(NSDictionary *response,
+                                   NSInteger httpCode,
+                                   NSURLSessionDataTask *task,
+                                   NSError *error))completion;
 
-+(AFHTTPRequestOperation *)PUT:(NSString *)url withParameters:(id)params andCompletionBlock:(void(^)(NSDictionary *response, NSInteger httpCode, AFHTTPRequestOperation *requestOperation, NSError *error))completion;
++(NSURLSessionDataTask *)PUT:(NSString *)url
+              withParameters:(id)params
+        andCompletionBlock:(void(^)(NSDictionary *response,
+                                   NSInteger httpCode,
+                                   NSURLSessionDataTask *task,
+                                   NSError *error))completion;
 
-+(AFHTTPRequestOperation *)DELETE:(NSString *)url withParameters:(id)params andCompletionBlock:(void(^)(NSDictionary *response, NSInteger httpCode, AFHTTPRequestOperation *requestOperation, NSError *error))completion;
++(NSURLSessionDataTask *)DELETE:(NSString *)url
+                 withParameters:(id)params
+           andCompletionBlock:(void(^)(NSDictionary *response,
+                                      NSInteger httpCode,
+                                      NSURLSessionDataTask *task,
+                                      NSError *error))completion;
 
-+(AFHTTPRequestOperation *)UPLOADmp:(NSString *)url withParameters:(id)params sendingBlock:(void(^)(long long totalBytesWritten, long long totalBytesExpectedToWrite, double percentageUploaded))sending andCompletionBlock:(void(^)(NSDictionary *response, NSInteger httpCode, AFHTTPRequestOperation *requestOperation, NSError *error))completion;
++(NSURLSessionUploadTask *)UPLOADmp:(NSString *)url
+                    withParameters:(id)params
+                      sendingBlock:(void(^)(int64_t bytesSent,
+                                           int64_t totalBytes,
+                                           double percentageUploaded))sending
+              andCompletionBlock:(void(^)(NSDictionary *response,
+                                         NSInteger httpCode,
+                                         NSURLSessionUploadTask *task,
+                                         NSError *error))completion;
 
-+(AFHTTPRequestOperation *)DOWNLOAD:(NSString *)url downloadingBlock:(void(^)(long long totalBytesWritten, long long totalBytesExpectedToWrite, double percentageUploaded))downloading andCompletionBlock:(void(^)(NSDictionary *response, NSInteger httpCode, AFHTTPRequestOperation *requestOperation, NSError *error))completion;
++(NSURLSessionDownloadTask *)DOWNLOAD:(NSString *)url
+                    downloadingBlock:(void(^)(int64_t bytesWritten,
+                                             int64_t totalBytes,
+                                             double percentageDownloaded))downloading
+                andCompletionBlock:(void(^)(NSDictionary *response,
+                                           NSInteger httpCode,
+                                           NSURLSessionDownloadTask *task,
+                                           NSError *error))completion;
 
 /**
  *  Netco Sports URLs Signature Generation

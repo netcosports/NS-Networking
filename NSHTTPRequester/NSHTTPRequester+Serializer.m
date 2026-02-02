@@ -13,83 +13,178 @@
 
 #pragma mark - HTTP Methods
 #pragma mark GET
-+(AFHTTPRequestOperation *)GET:(NSString *)url usingCacheTTL:(NSInteger)cacheTTL requestSerializer:(id<AFURLRequestSerialization>)customRequestSerializer responseSerializer:(id<AFURLResponseSerialization>)customResponseSerializer andCompletionBlock:(void(^)(NSDictionary *response, NSInteger httpCode, AFHTTPRequestOperation *requestOperation, NSError *error, BOOL isCached))completion
+
+#pragma mark - GET
++ (NSURLSessionDataTask *)GET:(NSString *)url
+                  usingCacheTTL:(NSInteger)cacheTTL
+               requestSerializer:(AFHTTPRequestSerializer *)customRequestSerializer
+              responseSerializer:(AFHTTPResponseSerializer *)customResponseSerializer
+             andCompletionBlock:(void(^)(NSDictionary *response,
+                                         NSInteger httpCode,
+                                         NSURLSessionTask *task,
+                                         NSError *error,
+                                         BOOL isCached))completion
 {
     NSHTTPRequester *sharedRequester = [NSHTTPRequester sharedRequester];
-    AFHTTPRequestOperation *requestOperation = [sharedRequester createAfNetworkingOperationWithUrl:url httpRequestType:eNSHttpRequestGET requestSerializer:customRequestSerializer responseSerializer:customResponseSerializer parameters:nil usingCacheTTL:cacheTTL andCompletionBlock:completion];
-    return requestOperation;
+    return [sharedRequester createAfNetworkingTaskWithUrl:url
+                                          httpRequestType:eNSHttpRequestGET
+                                        requestSerializer:customRequestSerializer
+                                       responseSerializer:customResponseSerializer
+                                               parameters:nil
+                                            usingCacheTTL:cacheTTL
+                                       andCompletionBlock:completion];
 }
 
-#pragma mark POST
-+(AFHTTPRequestOperation *)POST:(NSString *)url withParameters:(id)params requestSerializer:(id<AFURLRequestSerialization>)customRequestSerializer responseSerializer:(id<AFURLResponseSerialization>)customResponseSerializer andCompletionBlock:(void(^)(NSDictionary *response, NSInteger httpCode, AFHTTPRequestOperation *requestOperation, NSError *error))completion
+#pragma mark - POST
++ (NSURLSessionDataTask *)POST:(NSString *)url
+                withParameters:(id)params
+             requestSerializer:(AFHTTPRequestSerializer *)customRequestSerializer
+            responseSerializer:(AFHTTPResponseSerializer *)customResponseSerializer
+           andCompletionBlock:(void(^)(NSDictionary *response,
+                                       NSInteger httpCode,
+                                       NSURLSessionTask *task,
+                                       NSError *error))completion
 {
     NSHTTPRequester *sharedRequester = [NSHTTPRequester sharedRequester];
-    AFHTTPRequestOperation *requestOperation = [sharedRequester createAfNetworkingOperationWithUrl:url httpRequestType:eNSHttpRequestPOST requestSerializer:customRequestSerializer responseSerializer:customResponseSerializer parameters:params usingCacheTTL:0 andCompletionBlock:^(NSDictionary *response, NSInteger httpCode, AFHTTPRequestOperation *requestOperation, NSError *error, BOOL isCached)
-     {
-         if (completion)
-             completion(response, httpCode, requestOperation, error);
-     }];
-    return requestOperation;
-}
-
-#pragma mark PUT
-+(AFHTTPRequestOperation *)PUT:(NSString *)url withParameters:(id)params requestSerializer:(id<AFURLRequestSerialization>)customRequestSerializer responseSerializer:(id<AFURLResponseSerialization>)customResponseSerializer andCompletionBlock:(void(^)(NSDictionary *response, NSInteger httpCode, AFHTTPRequestOperation *requestOperation, NSError *error))completion
-{
-    NSHTTPRequester *sharedRequester = [NSHTTPRequester sharedRequester];
-    AFHTTPRequestOperation *requestOperation = [sharedRequester createAfNetworkingOperationWithUrl:url httpRequestType:eNSHttpRequestPUT requestSerializer:customRequestSerializer responseSerializer:customResponseSerializer parameters:params usingCacheTTL:0 andCompletionBlock:^(NSDictionary *response, NSInteger httpCode, AFHTTPRequestOperation *requestOperation, NSError *error, BOOL isCached)
-     {
-         if (completion)
-             completion(response, httpCode, requestOperation, error);
-     }];
-    return requestOperation;
-}
-
-#pragma mark DELETE
-+(AFHTTPRequestOperation *)DELETE:(NSString *)url withParameters:(id)params requestSerializer:(id<AFURLRequestSerialization>)customRequestSerializer responseSerializer:(id<AFURLResponseSerialization>)customResponseSerializer andCompletionBlock:(void(^)(NSDictionary *response, NSInteger httpCode, AFHTTPRequestOperation *requestOperation, NSError *error))completion
-{
-    NSHTTPRequester *sharedRequester = [NSHTTPRequester sharedRequester];
-    AFHTTPRequestOperation *requestOperation = [sharedRequester createAfNetworkingOperationWithUrl:url httpRequestType:eNSHttpRequestDELETE requestSerializer:customRequestSerializer responseSerializer:customResponseSerializer parameters:params usingCacheTTL:0 andCompletionBlock:^(NSDictionary *response, NSInteger httpCode, AFHTTPRequestOperation *requestOperation, NSError *error, BOOL isCached)
-     {
-         if (completion)
-             completion(response, httpCode, requestOperation, error);
-     }];
-    return requestOperation;
-}
-
-#pragma mark UPLOAD
-+(AFHTTPRequestOperation *)UPLOADmp:(NSString *)url withParameters:(id)params requestSerializer:(AFHTTPRequestSerializer *)customRequestSerializer responseSerializer:(id<AFURLResponseSerialization>)customResponseSerializer sendingBlock:(void(^)(long long totalBytesWritten, long long totalBytesExpectedToWrite, double percentageUploaded))sending andCompletionBlock:(void(^)(NSDictionary *response, NSInteger httpCode, AFHTTPRequestOperation *requestOperation, NSError *error))completion
-{
-    NSHTTPRequester *sharedRequester = [NSHTTPRequester sharedRequester];
-    AFHTTPRequestOperation *requestOperation = [sharedRequester createAfNetworkingOperationWithUrl:url httpRequestType:eNSHttpRequestUPLOAD requestSerializer:customRequestSerializer responseSerializer:customResponseSerializer parameters:params usingCacheTTL:0 andCompletionBlock:^(NSDictionary *response, NSInteger httpCode, AFHTTPRequestOperation *requestOperation, NSError *error, BOOL isCached)
-                                                {
-                                                    if (completion)
-                                                        completion(response, httpCode, requestOperation, error);
-                                                }];
-    
-    [requestOperation setUploadProgressBlock:^(NSUInteger bytesWritten, long long totalBytesWritten, long long totalBytesExpectedToWrite)
-     {
-         double percentDone = ((double)totalBytesWritten / (double)totalBytesExpectedToWrite) * 100;
-         if (sending)
-             sending(totalBytesWritten, totalBytesExpectedToWrite, percentDone);
-     }];
-    return requestOperation;
-}
-
-+(AFHTTPRequestOperation *)DOWNLOAD:(NSString *)url requestSerializer:(AFHTTPRequestSerializer *)customRequestSerializer responseSerializer:(id<AFURLResponseSerialization>)customResponseSerializer downloadingBlock:(void(^)(long long totalBytesRead, long long totalBytesExpectedToRead, double percentageDownloaded))downloading andCompletionBlock:(void(^)(NSDictionary *response, NSInteger httpCode, AFHTTPRequestOperation *requestOperation, NSError *error))completion
-{
-    NSHTTPRequester *sharedRequester = [NSHTTPRequester sharedRequester];
-    AFHTTPRequestOperation *requestOperation = [sharedRequester createAfNetworkingOperationWithUrl:url httpRequestType:eNSHttpRequestDOWNLOAD requestSerializer:customRequestSerializer responseSerializer:customResponseSerializer parameters:nil usingCacheTTL:0 andCompletionBlock:^(NSDictionary *response, NSInteger httpCode, AFHTTPRequestOperation *requestOperation, NSError *error, BOOL isCached)
-                                                {
-                                                    if (completion)
-                                                        completion(response, httpCode, requestOperation, error);
-                                                }];
-    
-    [requestOperation setDownloadProgressBlock:^(NSUInteger bytesRead, long long totalBytesRead, long long totalBytesExpectedToRead)
+    return [sharedRequester createAfNetworkingTaskWithUrl:url
+                                          httpRequestType:eNSHttpRequestPOST
+                                        requestSerializer:customRequestSerializer
+                                       responseSerializer:customResponseSerializer
+                                               parameters:params
+                                            usingCacheTTL:0
+                                       andCompletionBlock:^(NSDictionary *response, NSInteger httpCode, NSURLSessionTask *task, NSError *error, BOOL isCached)
     {
-         double percentDone = ((double)totalBytesRead / (double)totalBytesExpectedToRead) * 100;
-        if (downloading)
-            downloading(totalBytesRead, totalBytesExpectedToRead, percentDone);
+        if (completion) completion(response, httpCode, task, error);
     }];
-    return requestOperation;
 }
+
+#pragma mark - PUT
++ (NSURLSessionDataTask *)PUT:(NSString *)url
+               withParameters:(id)params
+            requestSerializer:(AFHTTPRequestSerializer *)customRequestSerializer
+           responseSerializer:(AFHTTPResponseSerializer *)customResponseSerializer
+          andCompletionBlock:(void(^)(NSDictionary *response,
+                                      NSInteger httpCode,
+                                      NSURLSessionTask *task,
+                                      NSError *error))completion
+{
+    NSHTTPRequester *sharedRequester = [NSHTTPRequester sharedRequester];
+    return [sharedRequester createAfNetworkingTaskWithUrl:url
+                                          httpRequestType:eNSHttpRequestPUT
+                                        requestSerializer:customRequestSerializer
+                                       responseSerializer:customResponseSerializer
+                                               parameters:params
+                                            usingCacheTTL:0
+                                       andCompletionBlock:^(NSDictionary *response, NSInteger httpCode, NSURLSessionTask *task, NSError *error, BOOL isCached)
+    {
+        if (completion) completion(response, httpCode, task, error);
+    }];
+}
+
+#pragma mark - DELETE
++ (NSURLSessionDataTask *)DELETE:(NSString *)url
+                  withParameters:(id)params
+               requestSerializer:(AFHTTPRequestSerializer *)customRequestSerializer
+              responseSerializer:(AFHTTPResponseSerializer *)customResponseSerializer
+             andCompletionBlock:(void(^)(NSDictionary *response,
+                                         NSInteger httpCode,
+                                         NSURLSessionTask *task,
+                                         NSError *error))completion
+{
+    NSHTTPRequester *sharedRequester = [NSHTTPRequester sharedRequester];
+    return [sharedRequester createAfNetworkingTaskWithUrl:url
+                                          httpRequestType:eNSHttpRequestDELETE
+                                        requestSerializer:customRequestSerializer
+                                       responseSerializer:customResponseSerializer
+                                               parameters:params
+                                            usingCacheTTL:0
+                                       andCompletionBlock:^(NSDictionary *response, NSInteger httpCode, NSURLSessionTask *task, NSError *error, BOOL isCached)
+    {
+        if (completion) completion(response, httpCode, task, error);
+    }];
+}
+
+#pragma mark - UPLOAD
++ (NSURLSessionUploadTask *)UPLOADmp:(NSString *)url
+                       withParameters:(id)params
+                    requestSerializer:(AFHTTPRequestSerializer *)customRequestSerializer
+                   responseSerializer:(id<AFURLResponseSerialization>)customResponseSerializer
+                         sendingBlock:(void(^)(int64_t totalBytesWritten,
+                                               int64_t totalBytesExpectedToWrite,
+                                               double percentageUploaded))sending
+                  andCompletionBlock:(void(^)(NSDictionary *response,
+                                             NSInteger httpCode,
+                                             NSURLSessionTask *task,
+                                             NSError *error))completion
+{
+    NSHTTPRequester *sharedRequester = [NSHTTPRequester sharedRequester];
+    
+    NSURLSessionUploadTask *task = (NSURLSessionUploadTask *)[sharedRequester createAfNetworkingTaskWithUrl:url
+                                                                                             httpRequestType:eNSHttpRequestUPLOAD
+                                                                                           requestSerializer:customRequestSerializer
+                                                                                          responseSerializer:customResponseSerializer
+                                                                                                  parameters:params
+                                                                                               usingCacheTTL:0
+                                                                                          andCompletionBlock:^(NSDictionary *response, NSInteger httpCode, NSURLSessionTask *task, NSError *error, BOOL isCached)
+    {
+        if (completion) {
+            completion(response, httpCode, task, error);
+        }
+    }];
+
+    [task setTaskDescription:@"UPLOAD"]; // optional tag
+    
+    return task;
+}
+
+#pragma mark - DOWNLOAD
++ (NSURLSessionDownloadTask *)DOWNLOAD:(NSString *)url
+                      requestSerializer:(AFHTTPRequestSerializer *)customRequestSerializer
+                     responseSerializer:(id<AFURLResponseSerialization>)customResponseSerializer
+                       downloadingBlock:(void(^)(int64_t totalBytesRead,
+                                                 int64_t totalBytesExpectedToRead,
+                                                 double percentageDownloaded))downloading
+                    andCompletionBlock:(void(^)(NSDictionary *response,
+                                               NSInteger httpCode,
+                                               NSURLSessionTask *task,
+                                               NSError *error))completion
+{
+    NSHTTPRequester *sharedRequester = [NSHTTPRequester sharedRequester];
+    
+    AFHTTPSessionManager *manager = [AFHTTPSessionManager manager];
+    manager.requestSerializer = customRequestSerializer;
+    manager.responseSerializer = customResponseSerializer;
+
+    NSURLRequest *request = [NSURLRequest requestWithURL:[NSURL URLWithString:url]];
+
+    NSURLSessionDownloadTask *downloadTask =
+    [manager downloadTaskWithRequest:request
+                             progress:^(NSProgress * _Nonnull downloadProgress) {
+                                 if (downloading) {
+                                     downloading(downloadProgress.completedUnitCount,
+                                                 downloadProgress.totalUnitCount,
+                                                 (double)downloadProgress.fractionCompleted * 100.0);
+                                 }
+                             }
+                          destination:^NSURL * _Nonnull(NSURL * _Nonnull targetPath, NSURLResponse * _Nonnull response) {
+                              // Save to temporary directory
+                              return [NSURL fileURLWithPath:[NSTemporaryDirectory() stringByAppendingPathComponent:response.suggestedFilename]];
+                          }
+                    completionHandler:^(NSURLResponse * _Nonnull response, NSURL * _Nullable filePath, NSError * _Nullable error) {
+                        if (completion) {
+                            NSDictionary *resp = nil;
+                            if (filePath) {
+                                resp = @{@"filePath": [filePath path]};
+                            }
+                            completion(resp,
+                                       [(NSHTTPURLResponse *)response statusCode],
+                                       downloadTask,
+                                       error);
+                        }
+                    }];
+    
+    [downloadTask resume];
+    return downloadTask;
+}
+
 @end

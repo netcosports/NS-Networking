@@ -24,13 +24,17 @@ typedef enum
     NSMutableArray *customPropertiesForUrl;
 }
 
--(AFHTTPRequestOperation *)createAfNetworkingOperationWithUrl:(NSString *)url
-                                              httpRequestType:(eNSHttpRequestType)httpRequestType
-                                            requestSerializer:(AFHTTPRequestSerializer *)requestSerializer
-                                           responseSerializer:(AFHTTPResponseSerializer *)responseSerializer
-                                                   parameters:(id)parameters
-                                                usingCacheTTL:(NSInteger)cacheTTL
-                                           andCompletionBlock:(void(^)(NSDictionary *response, NSInteger httpCode, AFHTTPRequestOperation *requestOperation, NSError *error, BOOL isCached))completion;
+-(NSURLSessionTask *)createAfNetworkingTaskWithUrl:(NSString *)url
+                                    httpRequestType:(eNSHttpRequestType)httpRequestType
+                                  requestSerializer:(AFHTTPRequestSerializer *)requestSerializer
+                                 responseSerializer:(AFHTTPResponseSerializer *)responseSerializer
+                                         parameters:(id)parameters
+                                      usingCacheTTL:(NSInteger)cacheTTL
+                                 andCompletionBlock:(void(^)(NSDictionary *response,
+                                                            NSInteger httpCode,
+                                                            NSURLSessionTask *task,
+                                                            NSError *error,
+                                                            BOOL isCached))completion;
 
 @end
 

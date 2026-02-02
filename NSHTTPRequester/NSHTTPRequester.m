@@ -176,268 +176,310 @@
 
 #pragma mark - HTTP Methods
 #pragma mark GET
-+(AFHTTPRequestOperation *)GET:(NSString *)url usingCacheTTL:(NSInteger)cacheTTL andCompletionBlock:(void(^)(NSDictionary *response, NSInteger httpCode, AFHTTPRequestOperation *requestOperation, NSError *error, BOOL isCached))completion
++(NSURLSessionDataTask *)GET:(NSString *)url
+             usingCacheTTL:(NSInteger)cacheTTL
+         requestSerializer:(AFHTTPRequestSerializer *)requestSerializer
+        responseSerializer:(AFHTTPResponseSerializer *)responseSerializer
+       andCompletionBlock:(void(^)(NSDictionary *response,
+                                  NSInteger httpCode,
+                                  NSURLSessionTask *task,
+                                  NSError *error,
+                                  BOOL isCached))completion
 {
-    return [NSHTTPRequester GET:url usingCacheTTL:cacheTTL requestSerializer:[AFJSONRequestSerializer serializer] responseSerializer:[AFJSONResponseSerializer serializer] andCompletionBlock:completion];
+    return (NSURLSessionDataTask *)[[NSHTTPRequester sharedRequester]
+        createAfNetworkingTaskWithUrl:url
+                      httpRequestType:eNSHttpRequestGET
+                    requestSerializer:requestSerializer
+                   responseSerializer:responseSerializer
+                           parameters:nil
+                        usingCacheTTL:cacheTTL
+                   andCompletionBlock:completion];
 }
 
 #pragma mark POST
-+(AFHTTPRequestOperation *)POST:(NSString *)url withParameters:(id)params andCompletionBlock:(void(^)(NSDictionary *response, NSInteger httpCode, AFHTTPRequestOperation *requestOperation, NSError *error))completion
++(NSURLSessionDataTask *)POST:(NSString *)url
+              withParameters:(id)params
+        andCompletionBlock:(void(^)(NSDictionary *response,
+                                   NSInteger httpCode,
+                                   NSURLSessionTask *task,
+                                   NSError *error))completion
 {
-    return [NSHTTPRequester POST:url withParameters:params requestSerializer:[AFJSONRequestSerializer serializer] responseSerializer:[AFJSONResponseSerializer serializer] andCompletionBlock:completion];
+    return [NSHTTPRequester POST:url
+                 withParameters:params
+              requestSerializer:[AFJSONRequestSerializer serializer]
+             responseSerializer:[AFJSONResponseSerializer serializer]
+            andCompletionBlock:completion];
 }
 
 #pragma mark PUT
-+(AFHTTPRequestOperation *)PUT:(NSString *)url withParameters:(id)params andCompletionBlock:(void(^)(NSDictionary *response, NSInteger httpCode, AFHTTPRequestOperation *requestOperation, NSError *error))completion
++(NSURLSessionDataTask *)PUT:(NSString *)url
+              withParameters:(id)params
+          andCompletionBlock:(void(^)(NSDictionary *response,
+                                       NSInteger httpCode,
+                                       NSURLSessionTask *task,
+                                       NSError *error))completion
 {
-    return [NSHTTPRequester PUT:url withParameters:params requestSerializer:[AFJSONRequestSerializer serializer] responseSerializer:[AFJSONResponseSerializer serializer] andCompletionBlock:completion];
+    return [NSHTTPRequester createTaskWithUrl:url
+                              httpRequestType:eNSHttpRequestPUT
+                                parameters:params
+                          requestSerializer:[AFJSONRequestSerializer serializer]
+                         responseSerializer:[AFJSONResponseSerializer serializer]
+                        andCompletionBlock:completion];
 }
 
 #pragma mark DELETE
-+(AFHTTPRequestOperation *)DELETE:(NSString *)url withParameters:(id)params andCompletionBlock:(void(^)(NSDictionary *response, NSInteger httpCode, AFHTTPRequestOperation *requestOperation, NSError *error))completion
++(NSURLSessionDataTask *)DELETE:(NSString *)url
+                 withParameters:(id)params
+             andCompletionBlock:(void(^)(NSDictionary *response,
+                                        NSInteger httpCode,
+                                        NSURLSessionTask *task,
+                                        NSError *error))completion
 {
-    return [NSHTTPRequester DELETE:url withParameters:params requestSerializer:[AFJSONRequestSerializer serializer] responseSerializer:[AFJSONResponseSerializer serializer] andCompletionBlock:completion];
+    AFHTTPSessionManager *manager = [[AFHTTPSessionManager alloc] initWithBaseURL:nil];
+    manager.requestSerializer = [AFJSONRequestSerializer serializer];
+    manager.responseSerializer = [AFJSONResponseSerializer serializer];
+
+    NSURLSessionDataTask *task = [manager DELETE:url
+                                     parameters:params
+                                        headers:nil
+                                        success:^(NSURLSessionDataTask *task, id responseObject) {
+        if (completion) {
+            completion(responseObject, ((NSHTTPURLResponse *)task.response).statusCode, task, nil);
+        }
+    } failure:^(NSURLSessionDataTask *task, NSError *error) {
+        if (completion) {
+            completion(nil, ((NSHTTPURLResponse *)task.response).statusCode, task, error);
+        }
+    }];
+
+    return task;
 }
 
 #pragma mark UPLOAD
-+(AFHTTPRequestOperation *)UPLOADmp:(NSString *)url withParameters:(id)params sendingBlock:(void(^)(long long totalBytesWritten, long long totalBytesExpectedToWrite, double percentageUploaded))sending andCompletionBlock:(void(^)(NSDictionary *response, NSInteger httpCode, AFHTTPRequestOperation *requestOperation, NSError *error))completion
++(NSURLSessionUploadTask *)UPLOADmp:(NSString *)url
+                      withParameters:(id)params
+                         sendingBlock:(void(^)(int64_t bytesSent,
+                                               int64_t totalBytes,
+                                               double percentageUploaded))sending
+                  andCompletionBlock:(void(^)(NSDictionary *response,
+                                             NSInteger httpCode,
+                                             NSURLSessionTask *task,
+                                             NSError *error))completion
 {
-    return [NSHTTPRequester UPLOADmp:url withParameters:params requestSerializer:[AFHTTPRequestSerializer serializer] responseSerializer:[AFJSONResponseSerializer serializer] sendingBlock:sending andCompletionBlock:completion];
+    return [NSHTTPRequester UPLOADmp:url
+                       withParameters:params
+                    requestSerializer:[AFHTTPRequestSerializer serializer]
+                   responseSerializer:[AFJSONResponseSerializer serializer]
+                         sendingBlock:sending
+                  andCompletionBlock:completion];
 }
 
 #pragma mark DOWNLOAD
-+(AFHTTPRequestOperation *)DOWNLOAD:(NSString *)url downloadingBlock:(void(^)(long long totalBytesWritten, long long totalBytesExpectedToWrite, double percentageUploaded))downloading andCompletionBlock:(void(^)(NSDictionary *response, NSInteger httpCode, AFHTTPRequestOperation *requestOperation, NSError *error))completion
++(NSURLSessionDownloadTask *)DOWNLOAD:(NSString *)url
+                     downloadingBlock:(void(^)(int64_t bytesDownloaded,
+                                               int64_t totalBytes,
+                                               double percentageDownloaded))downloading
+                  andCompletionBlock:(void(^)(NSDictionary *response,
+                                             NSInteger httpCode,
+                                             NSURLSessionTask *task,
+                                             NSError *error))completion
 {
-    return [NSHTTPRequester DOWNLOAD:url requestSerializer:[AFHTTPRequestSerializer serializer] responseSerializer:[AFImageResponseSerializer serializer] downloadingBlock:downloading andCompletionBlock:completion];
+    return [NSHTTPRequester DOWNLOAD:url
+                    requestSerializer:[AFHTTPRequestSerializer serializer]
+                   responseSerializer:[AFImageResponseSerializer serializer]
+                   downloadingBlock:downloading
+                  andCompletionBlock:completion];
 }
 
+
 #pragma mark - Private Creation of Operation
--(AFHTTPRequestOperation *)createAfNetworkingOperationWithUrl:(NSString *)url
-                          httpRequestType:(eNSHttpRequestType)httpRequestType
-                              requestSerializer:(AFHTTPRequestSerializer *)requestSerializer
-                              responseSerializer:(AFHTTPResponseSerializer *)responseSerializer
-                               parameters:(id)parameters
-                               usingCacheTTL:(NSInteger)cacheTTL
-                              andCompletionBlock:(void(^)(NSDictionary *response, NSInteger httpCode, AFHTTPRequestOperation *requestOperation, NSError *error, BOOL isCached))completion
+-(NSURLSessionTask *)createAfNetworkingTaskWithUrl:(NSString *)url
+                                  httpRequestType:(eNSHttpRequestType)httpRequestType
+                                requestSerializer:(AFHTTPRequestSerializer *)requestSerializer
+                               responseSerializer:(AFHTTPResponseSerializer *)responseSerializer
+                                       parameters:(id)parameters
+                                    usingCacheTTL:(NSInteger)cacheTTL
+                               andCompletionBlock:(void(^)(NSDictionary *response,
+                                                           NSInteger httpCode,
+                                                           NSURLSessionTask *task,
+                                                           NSError *error,
+                                                           BOOL isCached))completion
 {
-    url = [url stringByReplacingPercentEscapesUsingEncoding:NSUTF8StringEncoding];
-    url = [url stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding];
-    if ([NSHTTPRequester sharedRequester].verbose)
-    {
+    url = [url stringByRemovingPercentEncoding];
+    url = [url stringByAddingPercentEncodingWithAllowedCharacters:[NSCharacterSet URLQueryAllowedCharacterSet]];
+
+    if (self.verbose)
         [self printUrl:url forRequestType:httpRequestType];
-    }
-    
-    // CLIENT CACHE
+
+    // ✅ CLIENT CACHE (GET only)
     if (cacheTTL > 0 && httpRequestType == eNSHttpRequestGET)
     {
         [NSObject backgroundQueueBlock:^{
-            NSDictionary *localCachedResponse = [NSHTTPRequester getCacheValueForUrl:url andTTL:cacheTTL];
+            NSDictionary *localCachedResponse =
+                [NSHTTPRequester getCacheValueForUrl:url andTTL:cacheTTL];
+
             [NSObject mainQueueBlock:^{
                 if (completion && localCachedResponse)
                     completion(localCachedResponse, 0, nil, nil, YES);
             }];
         }];
-	}
+    }
 
-    // SERIALIZER TYPE
-    __block AFHTTPRequestOperationManager *afNetworkingManager = [AFHTTPRequestOperationManager manager];
-    if (requestSerializer && [requestSerializer conformsToProtocol:@protocol(AFURLRequestSerialization)])
-    {
-        [afNetworkingManager setRequestSerializer:requestSerializer];
-    }
-    else
-    {
-        if (self.verbose)
-            DLog(@"Bad request serializer");
-    }
-    if (responseSerializer && [responseSerializer conformsToProtocol:@protocol(AFURLResponseSerialization)])
-    {
-        [afNetworkingManager setResponseSerializer:responseSerializer];
-    }
-    else
-    {
-        if (self.verbose)
-            DLog(@"Bad response serializer");
-    }
-    
-    // COOKIES
-    [afNetworkingManager.requestSerializer setHTTPShouldHandleCookies:self.ishandlingCookies];
-    
-    // SERVER CACHE POLICY
+    // ✅ Session Manager (AFNetworking 4.x)
+    AFHTTPSessionManager *manager =
+        [[AFHTTPSessionManager alloc] initWithBaseURL:nil];
+
+    manager.requestSerializer = requestSerializer;
+    manager.responseSerializer = responseSerializer;
+
+    // ✅ Cookies
+    manager.requestSerializer.HTTPShouldHandleCookies = self.ishandlingCookies;
+
+    // ✅ Cache Policy
     if (cacheTTL > 0)
-        [afNetworkingManager.requestSerializer setCachePolicy:NSURLRequestUseProtocolCachePolicy];
+        manager.requestSerializer.cachePolicy = NSURLRequestUseProtocolCachePolicy;
     else
-        [afNetworkingManager.requestSerializer setCachePolicy:NSURLRequestReloadIgnoringLocalAndRemoteCacheData];
+        manager.requestSerializer.cachePolicy = NSURLRequestReloadIgnoringLocalCacheData;
 
-    // FORCE RESPONSE SERIALIZER TO ACCEPT CONTENT-TYPE (text/html, text/plain and application/ld+json) as well.
-    // (thefanclub.com send response with only one content-type : text/html).
-    // json mocks usually do not use application/json but text/plain instead.
-    NSMutableSet *acceptableResponseContentTypes = [afNetworkingManager.responseSerializer.acceptableContentTypes mutableCopy];
-    [acceptableResponseContentTypes addObject:@"text/html"];
-    [acceptableResponseContentTypes addObject:@"text/plain"];
-    [acceptableResponseContentTypes addObject:@"application/ld+json"];
-    [afNetworkingManager.responseSerializer setAcceptableContentTypes:acceptableResponseContentTypes];
+    // ✅ Accept extra content-types
+    NSMutableSet *acceptableTypes =
+        [manager.responseSerializer.acceptableContentTypes mutableCopy];
 
-    
-    // NETCO SPORTS SIGNED HTTP HEADER FIELDS
-    if (self.NS_CLIENT_ID && self.NS_CLIENT_SECRET && [self.NS_CLIENT_ID length] > 0 && [self.NS_CLIENT_SECRET length] > 0)
+    [acceptableTypes addObject:@"text/html"];
+    [acceptableTypes addObject:@"text/plain"];
+    [acceptableTypes addObject:@"application/ld+json"];
+
+    manager.responseSerializer.acceptableContentTypes = acceptableTypes;
+
+    // ✅ Signed Headers
+    if (self.NS_CLIENT_ID.length > 0 && self.NS_CLIENT_SECRET.length > 0)
     {
         NSString *urlForSig = url;
-        BOOL isJSONForSig = [requestSerializer isMemberOfClass:[AFJSONRequestSerializer class]];
-        
-        if (httpRequestType == eNSHttpRequestGET)
-        {
-            NSArray *urlTab = [url componentsSeparatedByString:@"?"];
-            if (urlTab && [urlTab count] == 2)
-            {
-                isJSONForSig = NO;
-                urlForSig = urlTab[0];
-                
-                NSMutableDictionary *newParams = [[NSMutableDictionary alloc] init];
-                NSArray *paramTab = [urlTab[1] componentsSeparatedByString:@"&"];
-                for (NSString *keyValue in paramTab)
-                {
-                    NSArray *keyValueTab = [keyValue componentsSeparatedByString:@"="];
-                    if (keyValueTab && [keyValueTab count] == 2)
-                    {
-                        [newParams setObject:keyValueTab[1] forKey:keyValueTab[0]];
-                    }
-                    else if (keyValueTab && [keyValueTab count] == 1)
-                    {
-                        [newParams setObject:@"" forKey:keyValueTab[0]];
-                    }
-                }
-                parameters = [newParams ToUnMutable];
-            }
-        }
-        
-        [[NSHTTPRequester genSignatureHeaders:self.NS_CLIENT_ID clientSecret:self.NS_CLIENT_SECRET forUrl:urlForSig params:parameters isJSON:isJSONForSig] enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop)
-        {
-            if (obj && [obj isKindOfClass:[NSDictionary class]])
-            {
-                [obj enumerateKeysAndObjectsUsingBlock:^(id key, id obj, BOOL *stop)
-                {
-                    [afNetworkingManager.requestSerializer setValue:obj forHTTPHeaderField:key];
-                }];
-            }
-        }];
-    }
+        BOOL isJSONForSig = [requestSerializer isKindOfClass:[AFJSONRequestSerializer class]];
 
-    // CUSTOM TIMEOUT
-    CGFloat timeoutForUrl = [self getCustomTimeoutsForUrl:url];
-    [afNetworkingManager.requestSerializer setTimeoutInterval:timeoutForUrl];
-    
-    // CUSTOM HTTP HEADER FIELDS
-    NSArray *customHttpHeaders = [self getCustomHeadersForUrl:url];
-    if (customHttpHeaders && [customHttpHeaders count] > 0)
-    {
-        [customHttpHeaders enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop)
+        [[NSHTTPRequester genSignatureHeaders:self.NS_CLIENT_ID
+                                 clientSecret:self.NS_CLIENT_SECRET
+                                       forUrl:urlForSig
+                                       params:parameters
+                                       isJSON:isJSONForSig]
+         enumerateObjectsUsingBlock:^(NSDictionary *obj, NSUInteger idx, BOOL *stop)
          {
-             [obj enumerateKeysAndObjectsUsingBlock:^(id key, id obj, BOOL *stop)
-              {
-                  [afNetworkingManager.requestSerializer setValue:obj forHTTPHeaderField:key];
-              }];
+            [obj enumerateKeysAndObjectsUsingBlock:^(id key, id value, BOOL *stop)
+            {
+                [manager.requestSerializer setValue:value forHTTPHeaderField:key];
+            }];
+         }];
+    }
+
+    // ✅ Timeout
+    manager.requestSerializer.timeoutInterval =
+        [self getCustomTimeoutsForUrl:url];
+
+    // ✅ Custom Headers
+    NSArray *customHeaders = [self getCustomHeadersForUrl:url];
+    for (NSDictionary *dict in customHeaders)
+    {
+        [dict enumerateKeysAndObjectsUsingBlock:^(id key, id obj, BOOL *stop)
+        {
+            [manager.requestSerializer setValue:obj forHTTPHeaderField:key];
         }];
     }
 
-    // CALLBACKS BLOCKS
-    void (^successCompletionBlock)(AFHTTPRequestOperation *operation, id responseObject) = ^(AFHTTPRequestOperation *operation, id responseObject)
+    // ✅ Completion helpers
+    void (^successBlock)(NSURLSessionTask *, id) =
+    ^(NSURLSessionTask *task, id responseObject)
     {
         if (httpRequestType == eNSHttpRequestGET)
-            [NSHTTPRequester cacheValue:responseObject forUrl:url]; // Store a Cached version of the response every time it's called.
-        
+            [NSHTTPRequester cacheValue:responseObject forUrl:url];
+
         if (completion)
-        {
-            completion(responseObject, [operation.response statusCode], operation, nil, NO);
-        }
-    };
-    void (^failureCompletionBlock)(AFHTTPRequestOperation *operation, NSError *error) = ^(AFHTTPRequestOperation *operation, NSError *error)
-    {
-        if (completion)
-        {
-            completion(operation.responseObject, [operation.response statusCode], operation, error, NO);
-        }
+            completion(responseObject,
+                       ((NSHTTPURLResponse *)task.response).statusCode,
+                       task,
+                       nil,
+                       NO);
     };
 
-    // OPERATIONMANAGER LAUNCHING OPERATION
-    AFHTTPRequestOperation *afNetworkingOperation = nil;
+    void (^failureBlock)(NSURLSessionTask *, NSError *) =
+    ^(NSURLSessionTask *task, NSError *error)
+    {
+        if (completion)
+            completion(nil,
+                       ((NSHTTPURLResponse *)task.response).statusCode,
+                       task,
+                       error,
+                       NO);
+    };
+
+    // ✅ Create Task
+    NSURLSessionTask *task = nil;
+
     switch (httpRequestType)
     {
         case eNSHttpRequestGET:
-            afNetworkingOperation = [afNetworkingManager GET:url parameters:nil success:successCompletionBlock failure:failureCompletionBlock];
+            task = [manager GET:url
+                     parameters:nil
+                        headers:nil
+                       progress:nil
+                        success:successBlock
+                        failure:failureBlock];
             break;
 
         case eNSHttpRequestPOST:
-            afNetworkingOperation = [afNetworkingManager POST:url parameters:parameters success:successCompletionBlock failure:failureCompletionBlock];
+            task = [manager POST:url
+                      parameters:parameters
+                         headers:nil
+                        progress:nil
+                         success:successBlock
+                         failure:failureBlock];
             break;
 
         case eNSHttpRequestPUT:
-            afNetworkingOperation = [afNetworkingManager PUT:url parameters:parameters success:successCompletionBlock failure:failureCompletionBlock];
+            task = [manager PUT:url
+                     parameters:parameters
+                        headers:nil
+                        success:successBlock
+                        failure:failureBlock];
             break;
 
         case eNSHttpRequestDELETE:
-            afNetworkingOperation = [afNetworkingManager DELETE:url parameters:parameters success:successCompletionBlock failure:failureCompletionBlock];
+            task = [manager DELETE:url
+                        parameters:parameters
+                           headers:nil
+                           success:successBlock
+                           failure:failureBlock];
             break;
 
         case eNSHttpRequestUPLOAD:
         {
-            afNetworkingOperation = [afNetworkingManager POST:url parameters:parameters constructingBodyWithBlock:^(id<AFMultipartFormData> formData)
+            task = [manager POST:url
+                      parameters:parameters
+                         headers:nil
+       constructingBodyWithBlock:^(id<AFMultipartFormData> formData)
             {
-                UIImage *imageToUpload = [parameters getXpathNil:@"image" type:[UIImage class]];
-                NSString *mimeType = [parameters getXpathNilString:@"mimetype"];
-                NSString *fileName = [parameters getXpathNilString:@"filename"];
-                NSString *serverFieldName = [parameters getXpathNilString:@"fieldname"];
-                
+                UIImage *imageToUpload = [parameters getXpathNil:@"image"
+                                                           type:[UIImage class]];
+
                 if (imageToUpload)
                 {
-                    NSData *imageData = UIImageJPEGRepresentation(imageToUpload, 0.5);
-                    NSString *impliedFileName = [imageToUpload accessibilityIdentifier];
-                    if (!impliedFileName || [impliedFileName length] == 0)
-                    {
-                        if (fileName)
-                            impliedFileName = fileName;
-                        else
-                            impliedFileName = @"file";
-                    }
-                    [formData appendPartWithFileData:imageData name:(serverFieldName ? serverFieldName : @"file") fileName:impliedFileName mimeType:mimeType];
+                    NSData *data = UIImageJPEGRepresentation(imageToUpload, 0.5);
+                    [formData appendPartWithFileData:data
+                                                name:@"file"
+                                            fileName:@"upload.jpg"
+                                            mimeType:@"image/jpeg"];
                 }
-            } success:successCompletionBlock failure:failureCompletionBlock];
+            }
+                        progress:nil
+                         success:successBlock
+                         failure:failureBlock];
             break;
         }
-        case eNSHttpRequestDOWNLOAD:
-        {
-            afNetworkingOperation = [afNetworkingManager HTTPRequestOperationWithRequest:[NSURLRequest requestWithURL:[NSURL URLWithString:url]] success:successCompletionBlock failure:failureCompletionBlock];
-            [afNetworkingOperation start];
-            break;
-        }
+
         default:
-            afNetworkingOperation = [afNetworkingManager GET:url parameters:nil success:successCompletionBlock failure:failureCompletionBlock];
             break;
     }
-    
-    if (afNetworkingOperation)
-    {
-        // QUEUE MANAGEMENT
-        afNetworkingOperation.completionQueue = [NSObject isMainQueue] ? nil : [NSObject backgroundQueueBlock:nil];
-        
-        // CACHE BLOCK
-        [afNetworkingOperation setCacheResponseBlock:^NSCachedURLResponse *(NSURLConnection *connection, NSCachedURLResponse *cachedResponse)
-         {
-             // Block Called only if : Cache-Control is set into http response header
-             if (cacheTTL > 0)
-                 return cachedResponse;
-             else
-                 return nil;
-         }];
 
-        // REDIRECTION BLOCK
-        [afNetworkingOperation setRedirectResponseBlock:^NSURLRequest *(NSURLConnection *connection, NSURLRequest *request, NSURLResponse *redirectResponse)
-        {
-            return request;
-        }];
-
-    }
-    return afNetworkingOperation;
+    return task;
 }
 
 -(void)printUrl:(NSString *)url forRequestType:(eNSHttpRequestType)requestType
@@ -477,6 +519,49 @@
         for (NSHTTPCookie *cookie in [storage cookies])
             [storage deleteCookie:cookie];
     }
+}
+
++ (NSURLSessionDataTask *)GET:(NSString *)url
+                 usingCacheTTL:(NSInteger)cacheTTL
+            andCompletionBlock:(void(^)(NSDictionary *response,
+                                        NSInteger httpCode,
+                                        NSURLSessionTask *task,
+                                        NSError *error,
+                                        BOOL isCached))completion
+{
+    return [NSHTTPRequester GET:url
+                   usingCacheTTL:cacheTTL
+                requestSerializer:[AFJSONRequestSerializer serializer]
+               responseSerializer:[AFJSONResponseSerializer serializer]
+              andCompletionBlock:completion];
+}
+
++ (NSURLSessionDataTask *)createTaskWithUrl:(NSString *)url
+                           httpRequestType:(eNSHttpRequestType)httpRequestType
+                                parameters:(id)parameters
+                          requestSerializer:(AFHTTPRequestSerializer *)requestSerializer
+                         responseSerializer:(AFHTTPResponseSerializer *)responseSerializer
+                        andCompletionBlock:(void(^)(NSDictionary *response,
+                                                   NSInteger httpCode,
+                                                   NSURLSessionTask *task,
+                                                   NSError *error))completion
+{
+    AFHTTPSessionManager *manager = [[AFHTTPSessionManager alloc] initWithBaseURL:nil];
+    manager.requestSerializer = requestSerializer;
+    manager.responseSerializer = responseSerializer;
+
+    NSURLSessionDataTask *task = [manager PUT:url
+                                   parameters:parameters
+                                      headers:nil
+                                      success:^(NSURLSessionDataTask *task, id responseObject) {
+        if (completion)
+            completion(responseObject, ((NSHTTPURLResponse *)task.response).statusCode, task, nil);
+    } failure:^(NSURLSessionDataTask *task, NSError *error) {
+        if (completion)
+            completion(nil, ((NSHTTPURLResponse *)task.response).statusCode, task, error);
+    }];
+
+    return task;
 }
 
 @end

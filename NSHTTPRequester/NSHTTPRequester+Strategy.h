@@ -26,22 +26,56 @@
  *
  *  @return (/)
  */
-+(AFHTTPRequestOperation *)strategicGET:(NSString *)url usingCacheTTL:(NSInteger)cacheTTL
-  requestSerializer:(id<AFURLRequestSerialization>)customRequestSerializer
- responseSerializer:(id<AFURLResponseSerialization>)customResponseSerializer
-strategicBlockReachableAndCache:(void(^)(NSDictionary *response, NSInteger httpCode, AFHTTPRequestOperation *requestOperation, NSError *error, BOOL isCached))strategicBlocReachCachedData
-strategicBlockReachableAndNoCache:(void(^)(NSDictionary *response, NSInteger httpCode, AFHTTPRequestOperation *requestOperation, NSError *error, BOOL isCached))strategicBlocDataUpdated
-strategicBlockNotReachableAndNoCache:(void(^)(NSDictionary *response, NSInteger httpCode, AFHTTPRequestOperation *requestOperation, NSError *error, BOOL isCached))strategicBlocNoDataEver
-andStrategicBlockNotReachableAndCache:(void(^)(NSDictionary *response, NSInteger httpCode, AFHTTPRequestOperation *requestOperation, NSError *error, BOOL isCached))strategicBlocNotReachCachedData;
++ (NSURLSessionDataTask *)strategicGET:(NSString *)url
+                        usingCacheTTL:(NSInteger)cacheTTL
+                     requestSerializer:(AFHTTPRequestSerializer *)customRequestSerializer
+                    responseSerializer:(id<AFURLResponseSerialization>)customResponseSerializer
+       strategicBlockReachableAndCache:(void(^)(NSDictionary *response,
+                                                 NSInteger httpCode,
+                                                 NSURLSessionTask *task,
+                                                 NSError *error,
+                                                 BOOL isCached))strategicBlocReachCachedData
+     strategicBlockReachableAndNoCache:(void(^)(NSDictionary *response,
+                                                 NSInteger httpCode,
+                                                 NSURLSessionTask *task,
+                                                 NSError *error,
+                                                 BOOL isCached))strategicBlocDataUpdated
+    strategicBlockNotReachableAndNoCache:(void(^)(NSDictionary *response,
+                                                   NSInteger httpCode,
+                                                   NSURLSessionTask *task,
+                                                   NSError *error,
+                                                   BOOL isCached))strategicBlocNoDataEver
+strategicBlockNotReachableAndCache:(void(^)(NSDictionary *response,
+                                             NSInteger httpCode,
+                                             NSURLSessionTask *task,
+                                             NSError *error,
+                                             BOOL isCached))strategicBlocNotReachCachedData;
 
 /**
  *  Short version of previous declaration. The custom serializers are pre-defined as AFJSONRequestSerializer & AFJSONResponseSerializer
  *
  */
-+(AFHTTPRequestOperation *)strategicGET:(NSString *)url usingCacheTTL:(NSInteger)cacheTTL
-strategicBlockReachableAndCache:(void(^)(NSDictionary *response, NSInteger httpCode, AFHTTPRequestOperation *requestOperation, NSError *error, BOOL isCached))strategicBlocReachCachedData
-strategicBlockReachableAndNoCache:(void(^)(NSDictionary *response, NSInteger httpCode, AFHTTPRequestOperation *requestOperation, NSError *error, BOOL isCached))strategicBlocDataUpdated
-strategicBlockNotReachableAndNoCache:(void(^)(NSDictionary *response, NSInteger httpCode, AFHTTPRequestOperation *requestOperation, NSError *error, BOOL isCached))strategicBlocNoDataEver
-andStrategicBlockNotReachableAndCache:(void(^)(NSDictionary *response, NSInteger httpCode, AFHTTPRequestOperation *requestOperation, NSError *error, BOOL isCached))strategicBlocCacheData;
++ (NSURLSessionDataTask *)strategicGET:(NSString *)url
+                          usingCacheTTL:(NSInteger)cacheTTL
+         strategicBlockReachableAndCache:(void(^)(NSDictionary *response,
+                                                   NSInteger httpCode,
+                                                   NSURLSessionTask *task,
+                                                   NSError *error,
+                                                   BOOL isCached))strategicBlocReachCachedData
+       strategicBlockReachableAndNoCache:(void(^)(NSDictionary *response,
+                                                   NSInteger httpCode,
+                                                   NSURLSessionTask *task,
+                                                   NSError *error,
+                                                   BOOL isCached))strategicBlocDataUpdated
+      strategicBlockNotReachableAndNoCache:(void(^)(NSDictionary *response,
+                                                    NSInteger httpCode,
+                                                    NSURLSessionTask *task,
+                                                    NSError *error,
+                                                    BOOL isCached))strategicBlocNoDataEver
+     andStrategicBlockNotReachableAndCache:(void(^)(NSDictionary *response,
+                                                     NSInteger httpCode,
+                                                     NSURLSessionTask *task,
+                                                     NSError *error,
+                                                     BOOL isCached))strategicBlocCacheData;
 
 @end
